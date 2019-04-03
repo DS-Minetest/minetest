@@ -1154,10 +1154,11 @@ void drawItemStack(
 		driver->draw2DRectangle(color, progressrect2, clip);
 	}
 
-	if (font != NULL && item.count >= 2) {
+	const std::string &count_text = item.metadata.getString("count", 0);
+	if (font && (item.count >= 2 || !count_text.empty())) {
 		// Get the item count as a string
-		std::string text = itos(item.count);
-		v2u32 dim = font->getDimension(utf8_to_wide(text).c_str());
+		std::string text = count_text.empty() ? itos(item.count) : count_text;
+		v2u32 dim = font->getDimension(utf8_to_wide(unescape_enriched(text)).c_str());
 		v2s32 sdim(dim.X, dim.Y);
 
 		core::rect<s32> rect2(
@@ -1166,6 +1167,19 @@ void drawItemStack(
 			rect.LowerRightCorner - sdim,
 			sdim
 		);
+
+		// get the count offset
+		const std::string &count_offset = item.metadata.getString("count_offset", 0);
+		if (!count_offset.empty()) {
+			std::vector<std::string> offset_s = split(count_offset,',');
+			if (offset_s.size() >= 2) {
+				s32 rect_sidelength = rect.UpperLeftCorner.X - rect.LowerRightCorner.X;
+				rect2 += v2s32(
+					(s32) (stof(offset_s[0]) * rect_sidelength),
+					(s32) (stof(offset_s[1]) * rect_sidelength)
+				);
+			}
+		}
 
 		video::SColor bgcolor(128, 0, 0, 0);
 		driver->draw2DRectangle(bgcolor, rect2, clip);

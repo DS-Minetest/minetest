@@ -2061,6 +2061,11 @@ Some of the values in the key-value store are handled specially:
 * `color`: A `ColorString`, which sets the stack's color.
 * `palette_index`: If the item has a palette, this is used to get the
   current color from the palette.
+* `count`: Replace the displayed count with any string.
+* `count_offset`: Set the offset of the displayed count. This consists
+  of two float numbers separated by a `,`.  The default value is equivalent
+  to `"0,0"`. The numbers are interpreted as multiples of the sidelength of
+  an inventory slot rectangle. Example: `"0.4,0.3"`
 
 Example:
 
