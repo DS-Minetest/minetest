@@ -355,9 +355,9 @@ void Server::init()
 	//hier
 	// Fill sscsm files and names cache
 	m_sscsms = std::vector<std::string>();
-	m_modmgr->getModNames(m_sscsms);
+	//~ m_modmgr->getModNames(m_sscsms);
 	m_sscsm_files = std::vector<std::pair<u8 *, u16>>();
-	SSCSMFileGrabber sscsm_file_grabber(&m_sscsms, &m_sscsm_files);
+	SSCSMFileGrabber sscsm_file_grabber(&m_sscsms, &m_sscsm_files, m_modmgr);
 	sscsm_file_grabber.parseMods();
 
 	// Read Textures and calculate sha1 sums

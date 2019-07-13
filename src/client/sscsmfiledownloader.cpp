@@ -52,7 +52,7 @@ void SSCSMFileDownloader::readBunches() // todo: decompress with zlib
 	m_bunches.pop();
 	u16 buffer_read_offset = 0;
 
-	while (b.size > buffer_read_offset) {
+	while (b.size > buffer_read_offset/* + 1?*/) {
 		// The buffer is not empty
 
 		if (m_current_file_path.empty()) {
@@ -60,12 +60,17 @@ void SSCSMFileDownloader::readBunches() // todo: decompress with zlib
 			u8 path_length = readU8(b.buffer + buffer_read_offset);
 			buffer_read_offset++;
 			// todo: path_length could be larger than b.size - buffer_read_offset
+			if (path_length > b.size - buffer_read_offset)
+				errorstream << "ahhhhhhhh" << std::endl;
+
 			m_current_file_path = std::string((char *)(b.buffer + buffer_read_offset), path_length);
 			buffer_read_offset += path_length;
+			errorstream << "[Client] new file path:" << m_current_file_path << std::endl;
+			errorstream << "[Client] buffer_read_offset:" << buffer_read_offset << std::endl;
 
-//~ #if DIR_DELIM != "/" // this does not work
-			// todo: replace "/"s with DIR_DELIMs in path
-//~ #endif
+#ifdef _WIN32 // DIR_DELIM is not "/"
+			m_current_file_path = str_replace(m_current_file_path, "/", DIR_DELIM);
+#endif
 
 			m_current_file_path = porting::path_cache + DIR_DELIM + "sscsm" +
 					DIR_DELIM + m_current_file_path;
@@ -76,6 +81,7 @@ void SSCSMFileDownloader::readBunches() // todo: decompress with zlib
 			buffer_read_offset += 2;
 
 			// create directory to file if needed
+			errorstream << "[Client] creating all dirs to:" << fs::RemoveLastPathComponent(m_current_file_path) << std::endl;
 			fs::CreateAllDirs(fs::RemoveLastPathComponent(m_current_file_path));
 		}
 
