@@ -3,7 +3,7 @@
 #include "porting.h"
 #include "util/serialize.h"
 #include "filesys.h"
-//~ #include <fstream>
+#include <fstream>
 //~ #include "zlib.h"
 
 /*
@@ -70,8 +70,13 @@ void SSCSMFileDownloader::readBunches() // todo: decompress with zlib
 			m_current_file_path = porting::path_cache + DIR_DELIM + "sscsm" +
 					DIR_DELIM + m_current_file_path;
 
+			// todo: check whether path is in path_cache/sscsm/* and stop connecting if it is not
+
 			m_remaining_file_size = readU16(b.buffer + buffer_read_offset);
 			buffer_read_offset += 2;
+
+			// create directory to file if needed
+			fs::CreateAllDirs(fs::RemoveLastPathComponent(m_current_file_path));
 		}
 
 		u16 actual_writing_length = MYMIN(m_remaining_file_size, b.size - buffer_read_offset);
@@ -84,13 +89,13 @@ void SSCSMFileDownloader::readBunches() // todo: decompress with zlib
 		}
 
 		// append the contents to the file
-		//~ std::filebuf file();
-		//~ file.open(m_current_file_path, "ab");
-		//~ file.sputn((char *)(b.buffer + buffer_read_offset), actual_writing_length);
-		//~ file.close();
-		errorstream << "[Client] append from bunch " << b.i << " to file \"" <<
-			m_current_file_path << "\": " << std::endl;
-		errorstream << std::string((char *)(b.buffer + buffer_read_offset), actual_writing_length) << std::endl;
+		std::ofstream file(m_current_file_path, std::ios_base::app);
+		file.write((char *)(b.buffer + buffer_read_offset), actual_writing_length);
+		file.close();
+
+		//~ errorstream << "[Client] append from bunch " << b.i << " to file \"" <<
+			//~ m_current_file_path << "\": " << std::endl;
+		//~ errorstream << std::string((char *)(b.buffer + buffer_read_offset), actual_writing_length) << std::endl;
 
 		buffer_read_offset += actual_writing_length;
 		m_remaining_file_size -= actual_writing_length;

@@ -338,6 +338,11 @@ void Client::step(float dtime)
 		initial_step = false;
 	}
 	else if(m_state == LC_Created) {
+		//hier
+		// clear sscsm cache
+		// (this might be the wrong place to do so)
+		fs::RecursiveDelete(porting::path_cache + DIR_DELIM + "sscsm");
+
 		if (m_is_registration_confirmation_state) {
 			// Waiting confirmation
 			return;
