@@ -67,10 +67,10 @@ const ToClientCommandHandler toClientCommandTable[TOCLIENT_NUM_MSG_TYPES] =
 	null_command_handler,
 	{ "TOCLIENT_TIME_OF_DAY",              TOCLIENT_STATE_CONNECTED, &Client::handleCommand_TimeOfDay }, // 0x29
 	{ "TOCLIENT_CSM_RESTRICTION_FLAGS",    TOCLIENT_STATE_CONNECTED, &Client::handleCommand_CSMRestrictionFlags }, // 0x2A
-	null_command_handler,
-	null_command_handler,
-	null_command_handler,
-	null_command_handler,
+	{ "TOCLIENT_SSCSM_ANNOUNCE",           TOCLIENT_STATE_CONNECTED, &Client::handleCommand_SSCSMAnnounce }, // 0x2B //hier
+	{ "TOCLIENT_SSCSM_FILE_BUNCH",         TOCLIENT_STATE_CONNECTED, &Client::handleCommand_SSCSMFileBunch }, // 0x2C
+	null_command_handler, // 0x2D
+	null_command_handler, // 0x2E
 	{ "TOCLIENT_CHAT_MESSAGE",             TOCLIENT_STATE_CONNECTED, &Client::handleCommand_ChatMessage }, // 0x2F
 	null_command_handler, // 0x30
 	{ "TOCLIENT_ACTIVE_OBJECT_REMOVE_ADD", TOCLIENT_STATE_CONNECTED, &Client::handleCommand_ActiveObjectRemoveAdd }, // 0x31

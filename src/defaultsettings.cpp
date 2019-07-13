@@ -61,6 +61,7 @@ void set_default_settings(Settings *settings)
 	settings->setDefault("max_out_chat_queue_size", "20");
 	settings->setDefault("pause_on_lost_focus", "false");
 	settings->setDefault("enable_register_confirmation", "true");
+	settings->setDefault("sscsm_file_size_limit", "1000000");
 
 	// Keymap
 	settings->setDefault("remote_port", "30000");

@@ -928,6 +928,9 @@ client_mapblock_limit (Mapblock limit) int 5000
 #    Whether to show the client debug info (has the same effect as hitting F5).
 show_debug (Show debug info) bool false
 
+#    Maximum size in bytes that all server-sent client-side-modding files can have together
+sscsm_file_size_limit (Sscsm file size limit) int 1000000
+
 [Server / Singleplayer]
 
 #    Name of the server, to be displayed when players join and in the serverlist.

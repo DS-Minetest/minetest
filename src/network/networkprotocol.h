@@ -295,6 +295,23 @@ enum ToClientCommand
 		u32 CSMRestrictionFlags byteflag
 	 */
 
+	TOCLIENT_SSCSM_ANNOUNCE = 0x2B, //hier
+	/*
+		u16 total number of sscsms
+		for all sscsms (in correct loading order) {
+			std::string name
+		}
+	*/
+	TOCLIENT_SSCSM_FILE_BUNCH = 0x2C,
+	/*
+		u32 total number of file bunches
+		u32 index of this file bunch
+		u32 length of this bunch {
+			u8 compressed data
+		}
+		todo: maybe add a checksum?
+	*/
+
 	// (oops, there is some gap here)
 
 	TOCLIENT_CHAT_MESSAGE = 0x2F,

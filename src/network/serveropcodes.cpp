@@ -156,10 +156,10 @@ const ClientCommandFactory clientCommandFactoryTable[TOCLIENT_NUM_MSG_TYPES] =
 	null_command_factory,
 	{ "TOCLIENT_TIME_OF_DAY",              0, true }, // 0x29
 	{ "TOCLIENT_CSM_RESTRICTION_FLAGS",    0, true }, // 0x2A
-	null_command_factory,
-	null_command_factory,
-	null_command_factory,
-	null_command_factory,
+	{ "TOCLIENT_SSCSM_ANNOUNCE",           0, true }, // 0x2B //hier
+	{ "TOCLIENT_SSCSM_FILE_BUNCH",         0, true }, // 0x2C
+	null_command_factory, // 0x2D
+	null_command_factory, // 0x2E
 	{ "TOCLIENT_CHAT_MESSAGE",             0, true }, // 0x2F
 	null_command_factory, // 0x30
 	{ "TOCLIENT_ACTIVE_OBJECT_REMOVE_ADD", 0, true }, // 0x31

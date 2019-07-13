@@ -52,6 +52,7 @@ class ISoundManager;
 class NodeDefManager;
 //class IWritableCraftDefManager;
 class ClientMediaDownloader;
+class SSCSMFileDownloader;
 struct MapDrawControl;
 class ModChannelMgr;
 class MtEventManager;
@@ -227,6 +228,8 @@ public:
 	void handleCommand_SrpBytesSandB(NetworkPacket *pkt);
 	void handleCommand_FormspecPrepend(NetworkPacket *pkt);
 	void handleCommand_CSMRestrictionFlags(NetworkPacket *pkt);
+	void handleCommand_SSCSMAnnounce(NetworkPacket *pkt); //hier
+	void handleCommand_SSCSMFileBunch(NetworkPacket *pkt);
 
 	void ProcessData(NetworkPacket *pkt);
 
@@ -547,6 +550,8 @@ private:
 	bool m_nodedef_received = false;
 	bool m_mods_loaded = false;
 	ClientMediaDownloader *m_media_downloader;
+
+	SSCSMFileDownloader *m_sscsm_file_downloader; //hier
 
 	// time_of_day speed approximation for old protocol
 	bool m_time_of_day_set = false;
