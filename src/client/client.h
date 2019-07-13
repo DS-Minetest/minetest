@@ -38,6 +38,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "network/address.h"
 #include "network/peerhandler.h"
 #include <fstream>
+#include "sscsmfiledownloader.h"
 
 #define CLIENT_CHAT_MESSAGE_LIMIT_PER_10S 10.0f
 
@@ -227,6 +228,10 @@ public:
 	void handleCommand_SrpBytesSandB(NetworkPacket *pkt);
 	void handleCommand_FormspecPrepend(NetworkPacket *pkt);
 	void handleCommand_CSMRestrictionFlags(NetworkPacket *pkt);
+	void handleCommand_SSCSMBla(NetworkPacket *pkt); //hier
+	void handleCommand_SSCSMTestfile(NetworkPacket *pkt);
+	void handleCommand_SSCSMAnnounce(NetworkPacket *pkt);
+	void handleCommand_SSCSMFileBunch(NetworkPacket *pkt);
 
 	void ProcessData(NetworkPacket *pkt);
 
@@ -547,6 +552,8 @@ private:
 	bool m_nodedef_received = false;
 	bool m_mods_loaded = false;
 	ClientMediaDownloader *m_media_downloader;
+
+	SSCSMFileDownloader *m_sscsm_file_downloader; //hier
 
 	// time_of_day speed approximation for old protocol
 	bool m_time_of_day_set = false;

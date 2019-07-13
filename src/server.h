@@ -472,6 +472,12 @@ private:
 		bool reliable = true);
 	void SendCSMRestrictionFlags(session_t peer_id);
 
+	// sscsm stuff
+	void SendSSCSMBla(session_t peer_id); //hier
+	void SendSSCSMTestfile(session_t peer_id);
+	void SendSSCSMAnnounce(session_t peer_id); //hier
+	void SendSSCSMFiles(session_t peer_id);
+
 	/*
 		Something random
 	*/
@@ -640,6 +646,10 @@ private:
 
 	// media files known to server
 	std::unordered_map<std::string, MediaInfo> m_media;
+
+	// sscsm stuff
+	std::vector<std::string> m_sscsms; //hier
+	std::vector<std::pair<u8 *, u16>> m_sscsm_files;
 
 	/*
 		Sounds

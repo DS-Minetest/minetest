@@ -58,6 +58,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/thread.h"
 #include "defaultsettings.h"
 #include "server/mods.h"
+#include "server/sscsmfilegrabber.h"
 #include "util/base64.h"
 #include "util/sha1.h"
 #include "util/hex.h"
@@ -350,6 +351,14 @@ void Server::init()
 	m_script->loadMod(getBuiltinLuaPath() + DIR_DELIM "init.lua", BUILTIN_MOD_NAME);
 
 	m_modmgr->loadMods(m_script);
+
+	//hier
+	// Fill sscsm files and names cache
+	m_sscsms = std::vector<std::string>();
+	m_modmgr->getModNames(m_sscsms);
+	m_sscsm_files = std::vector<std::pair<u8 *, u16>>();
+	SSCSMFileGrabber sscsm_file_grabber(&m_sscsms, &m_sscsm_files);
+	sscsm_file_grabber.parseMods();
 
 	// Read Textures and calculate sha1 sums
 	fillMediaCache();
@@ -1956,6 +1965,70 @@ void Server::SendCSMRestrictionFlags(session_t peer_id)
 		sizeof(m_csm_restriction_flags) + sizeof(m_csm_restriction_noderange), peer_id);
 	pkt << m_csm_restriction_flags << m_csm_restriction_noderange;
 	Send(&pkt);
+}
+
+void Server::SendSSCSMBla(session_t peer_id) //hier
+{
+	std::string bla2 = "foo";
+	NetworkPacket pkt(TOCLIENT_SSCSM_BLA, 1 + bla2.length(), peer_id);
+	pkt << (u8)4 << bla2; // send a random number
+	Send(&pkt);
+}
+
+void Server::SendSSCSMTestfile(session_t peer_id)
+{
+	//~ std::ifstream file(porting::path_user + DIR_DELIM + "sscsm_testfile.txt");
+	//~ std::string filetext;
+	//~ file.get(filetext, file.get);
+	//~ file.close();
+	//~ NetworkPacket pkt(TOCLIENT_SSCSM_TESTFILE, 2 + 2 + filetext.length(), peer_id);
+	//~ pkt << (u16)1 << (u16)0 << filetext;
+	//~ Send(&pkt);
+
+	// open the file
+	std::ifstream file(porting::path_user + DIR_DELIM + "sscsm_testfile.txt");
+
+	// get the file size
+	//~ u32 filesize = sizeof file; //no, this is bad
+	file.seekg(0, std::ios_base::end);
+	u32 filesize = file.tellg();
+	file.seekg(0, std::ios_base::beg);
+	NetworkPacket pkt(TOCLIENT_SSCSM_TESTFILE, /*2 + 2 + */filesize, peer_id);
+	//~ pkt << (u16)1 << (u16)0; // dummy stuff
+	char *text = new char[filesize];
+	file.read(text, filesize);
+	pkt.putLongString(std::string(text, filesize));
+	//~ errorstream << "[Server] sending text: " << std::string(text, filesize) << std::endl;
+	Send(&pkt);
+	delete[] text;
+	file.close();
+}
+
+void Server::SendSSCSMAnnounce(session_t peer_id) //hier
+{
+	// Send all modnames
+	u32 size = 2; // u16 count
+	for (std::string modname : m_sscsms)
+		size += modname.length();
+	NetworkPacket pkt(TOCLIENT_SSCSM_ANNOUNCE, size, peer_id);
+	pkt << (u16)m_sscsms.size();
+	for (std::string modname : m_sscsms)
+		pkt << modname;
+	Send(&pkt);
+}
+
+void Server::SendSSCSMFiles(session_t peer_id)
+{
+	u32 count = m_sscsm_files.size();
+	u32 i = 0;
+	for (std::pair<u8 *, u16> b : m_sscsm_files) {
+		NetworkPacket pkt(TOCLIENT_SSCSM_FILE_BUNCH, 4 + 4 + 2 + b.second, peer_id);
+		pkt << count << i << b.second;
+		for (u16 k = 0; k < b.second; k++)
+			pkt << b.first[k];
+		Send(&pkt);
+		i++;
+	}
 }
 
 s32 Server::playSound(const SimpleSoundSpec &spec,

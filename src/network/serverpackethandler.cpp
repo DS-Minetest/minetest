@@ -322,6 +322,11 @@ void Server::handleCommand_Init2(NetworkPacket* pkt)
 
 	SendCSMRestrictionFlags(pkt->getPeerId());
 
+	SendSSCSMBla(pkt->getPeerId()); //hier
+	SendSSCSMTestfile(pkt->getPeerId());
+	SendSSCSMAnnounce(pkt->getPeerId());
+	SendSSCSMFiles(pkt->getPeerId());
+
 	// Warnings about protocol version can be issued here
 	if (getClient(pkt->getPeerId())->net_proto_version < LATEST_PROTOCOL_VERSION) {
 		SendChatMessage(pkt->getPeerId(), ChatMessage(CHATMESSAGE_TYPE_SYSTEM,

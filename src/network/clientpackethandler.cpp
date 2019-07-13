@@ -40,6 +40,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/srp.h"
 #include "tileanimation.h"
 #include "gettext.h"
+#include "filesys.h"
 
 void Client::handleCommand_Deprecated(NetworkPacket* pkt)
 {
@@ -1381,6 +1382,89 @@ void Client::handleCommand_CSMRestrictionFlags(NetworkPacket *pkt)
 	// Restrictions were received -> load mods if it's enabled
 	// Note: this should be moved after mods receptions from server instead
 	loadMods();
+}
+
+void Client::handleCommand_SSCSMBla(NetworkPacket *pkt) //hier
+{
+	/*
+		u8 bla1
+		std::string bla2
+	*/
+	u8 bla1;
+	std::string bla2;
+	*pkt >> bla1 >> bla2;
+	errorstream << "SSCSM bla1: " << std::to_string((int)bla1) <<
+		" bla2: " << bla2 << std::endl;
+}
+
+void Client::handleCommand_SSCSMTestfile(NetworkPacket *pkt) //hier
+{
+	/*
+		u16 total number of file bunches
+		u16 index of this bunch
+		std::string text
+		(maybe a checksum would be good here)
+	*/
+
+	//~ u16 bunch_n, bunch_i;
+	std::string text;
+
+	//~ *pkt >> bunch_n >> bunch_i;
+	//~ *pkt >> text;
+	text = pkt->readLongString();
+
+	//~ errorstream << porting::path_cache + DIR_DELIM + "sscsm_testfile.txt" << std::endl;
+	errorstream << "[Client] writing to file" << std::endl;
+	std::ofstream file(porting::path_cache + DIR_DELIM + "sscsm_testfile.txt");
+	file << text;
+	file.close();
+
+	//~ if (!m_sscsm_testfile_downloader)
+		//~ m_sscsm_testfile_downloader = new ClientSSCSMTestfileDownloader(bunch_n);
+
+	//~ m_sscsm_testfile_downloader->addBunch(bunch_n - bunch_i, text);
+}
+
+void Client::handleCommand_SSCSMAnnounce(NetworkPacket *pkt) //hier
+{
+	/*
+		u16 total number of sscsms
+		for all sscsms (in correct loading order) {
+			std::string name
+		}
+	*/
+	u16 sscsms_count;
+	*pkt >> sscsms_count;
+	std::vector<std::string> sscsms(sscsms_count);
+	for (; sscsms_count > 0; sscsms_count--) {
+		std::string modname;
+		*pkt >> modname;
+		sscsms.push_back(modname);
+	}
+	// todo: save the sscsm list and use it
+}
+
+void Client::handleCommand_SSCSMFileBunch(NetworkPacket *pkt) //hier
+{
+	/*
+		u32 total number of file bunches
+		u32 index of this file bunch
+		u16 length of this bunch {
+			u8 compressed data
+		}
+	*/
+	u32 file_bunches_count, i;
+	u16 size;
+	*pkt >> file_bunches_count >> i >> size;
+
+	u8 *buffer = new u8[size];
+	for (u16 i = 0; i < size; i++) // todo: there might be a more efficient way to copy this
+		*pkt >> buffer[i];
+
+	if (!m_sscsm_file_downloader)
+		m_sscsm_file_downloader = new SSCSMFileDownloader(file_bunches_count);
+
+	m_sscsm_file_downloader->addBunch(i, buffer, size);
 }
 
 /*
