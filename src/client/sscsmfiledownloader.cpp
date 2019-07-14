@@ -110,6 +110,12 @@ void SSCSMFileDownloader::readBunches()
 				// the whole path is read into buffer
 				m_current_file_path = std::string((char *)m_buffer, m_read_length);
 
+				// check whether path is in path_cache/sscsm/* (this might be not good enough)
+				if (m_current_file_path.find("..") != std::string::npos) {
+					errorstream << "SSCSMFileDownloader::readBunches: the server is evil" << std::endl;
+					// todo: stop connecting
+				}
+
 #ifdef _WIN32 // DIR_DELIM is not "/"
 				m_current_file_path = str_replace(m_current_file_path, "/", DIR_DELIM);
 #endif
@@ -118,6 +124,7 @@ void SSCSMFileDownloader::readBunches()
 						DIR_DELIM + m_current_file_path;
 
 				// todo: check whether path is in path_cache/sscsm/* and todo: stop connecting if it is not
+				// maybe that up there is enough
 
 				// create directory to file if needed
 				fs::CreateAllDirs(fs::RemoveLastPathComponent(m_current_file_path));
