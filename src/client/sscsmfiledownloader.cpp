@@ -25,7 +25,7 @@ SSCSMFileDownloader::SSCSMFileDownloader(u32 bunches_count) :
 	m_remaining_disk_space = 1000000;
 }
 
-void SSCSMFileDownloader::addBunch(u32 i, u8 *buffer, u16 size)
+void SSCSMFileDownloader::addBunch(u32 i, u8 *buffer, u32 size)
 {
 	// this would not be good with compressing
 	//~ m_remaining_disk_space -= MYMIN(size, m_remaining_disk_space);
@@ -50,7 +50,7 @@ void SSCSMFileDownloader::readBunches() // todo: decompress with zlib
 	// Read a single bunch
 	bunch b = m_bunches.top();
 	m_bunches.pop();
-	u16 buffer_read_offset = 0;
+	u32 buffer_read_offset = 0;
 
 	while (b.size > buffer_read_offset/* + 1?*/) {
 		// The buffer is not empty

@@ -1449,16 +1449,16 @@ void Client::handleCommand_SSCSMFileBunch(NetworkPacket *pkt) //hier
 	/*
 		u32 total number of file bunches
 		u32 index of this file bunch
-		u16 length of this bunch {
+		u32 length of this bunch {
 			u8 compressed data
 		}
 	*/
 	u32 file_bunches_count, i;
-	u16 size;
+	u32 size;
 	*pkt >> file_bunches_count >> i >> size;
 
 	u8 *buffer = new u8[size];
-	for (u16 i = 0; i < size; i++) // todo: there might be a more efficient way to copy this
+	for (u32 i = 0; i < size; i++) // todo: there might be a more efficient way to copy this
 		*pkt >> buffer[i];
 
 	if (!m_sscsm_file_downloader)

@@ -11,7 +11,7 @@ class SSCSMFileGrabber
 {
 public:
 	SSCSMFileGrabber(std::vector<std::string> *mods,
-		std::vector<std::pair<u8 *, u16>> *sscsm_files,
+		std::vector<std::pair<u8 *, u32>> *sscsm_files,
 		const std::unique_ptr<ServerModManager> &modmgr);
 
 	/*
@@ -39,10 +39,10 @@ private:
 	void addDummyFile();
 
 	std::vector<std::string> *m_mods;
-	std::vector<std::pair<u8 *, u16>> *m_sscsm_files;
+	std::vector<std::pair<u8 *, u32>> *m_sscsm_files;
 	const std::unique_ptr<ServerModManager> &m_modmgr;
 
 	u8 *m_buffer;
-	u16 m_buffer_offset;
-	const u16 m_buffer_size = 32 * 1024; // uh, it should probably be an u32
+	u32 m_buffer_offset;
+	const u32 m_buffer_size = 32 * 1024;
 };

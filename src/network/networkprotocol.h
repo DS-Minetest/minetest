@@ -320,7 +320,7 @@ enum ToClientCommand
 	/*
 		u32 total number of file bunches
 		u32 index of this file bunch
-		u16 length of this bunch {
+		u32 length of this bunch {
 			u8 compressed data
 		}
 	*/

@@ -649,7 +649,7 @@ private:
 
 	// sscsm stuff
 	std::vector<std::string> m_sscsms; //hier
-	std::vector<std::pair<u8 *, u16>> m_sscsm_files;
+	std::vector<std::pair<u8 *, u32>> m_sscsm_files;
 
 	/*
 		Sounds

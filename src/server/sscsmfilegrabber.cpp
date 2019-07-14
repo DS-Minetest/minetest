@@ -8,7 +8,7 @@
 //~ #include "zlib.h"
 
 SSCSMFileGrabber::SSCSMFileGrabber(std::vector<std::string> *mods,
-	std::vector<std::pair<u8 *, u16>> *sscsm_files,
+	std::vector<std::pair<u8 *, u32>> *sscsm_files,
 	const std::unique_ptr<ServerModManager> &modmgr) :
 	m_mods(mods), m_sscsm_files(sscsm_files), m_modmgr(modmgr)
 {

@@ -356,7 +356,7 @@ void Server::init()
 	// Fill sscsm files and names cache
 	m_sscsms = std::vector<std::string>();
 	//~ m_modmgr->getModNames(m_sscsms);
-	m_sscsm_files = std::vector<std::pair<u8 *, u16>>();
+	m_sscsm_files = std::vector<std::pair<u8 *, u32>>();
 	SSCSMFileGrabber sscsm_file_grabber(&m_sscsms, &m_sscsm_files, m_modmgr);
 	sscsm_file_grabber.parseMods();
 
@@ -2021,10 +2021,10 @@ void Server::SendSSCSMFiles(session_t peer_id)
 {
 	u32 count = m_sscsm_files.size();
 	u32 i = 0;
-	for (std::pair<u8 *, u16> b : m_sscsm_files) {
-		NetworkPacket pkt(TOCLIENT_SSCSM_FILE_BUNCH, 4 + 4 + 2 + b.second, peer_id);
+	for (std::pair<u8 *, u32> b : m_sscsm_files) {
+		NetworkPacket pkt(TOCLIENT_SSCSM_FILE_BUNCH, 4 + 4 + 4 + b.second, peer_id);
 		pkt << count << i << b.second;
-		for (u16 k = 0; k < b.second; k++)
+		for (u32 k = 0; k < b.second; k++)
 			pkt << b.first[k];
 		Send(&pkt);
 		i++;

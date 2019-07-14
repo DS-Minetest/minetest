@@ -11,19 +11,19 @@ class SSCSMFileDownloader
 public:
 	SSCSMFileDownloader(u32 bunches_count);
 
-	void addBunch(u32 i, u8 *buffer, u16 size);
+	void addBunch(u32 i, u8 *buffer, u32 size);
 
 private:
 	struct bunch
 	{
-		bunch(u32 ai, u8 *abuffer, u16 asize) :
+		bunch(u32 ai, u8 *abuffer, u32 asize) :
 			i(ai), buffer(abuffer), size(asize)
 		{
 		}
 
 		u32 i;
 		u8 *buffer;
-		u16 size;
+		u32 size;
 	};
 
 	class comp
