@@ -11,7 +11,7 @@
  * for each file {
  *     u8 path_length
  *     chars path
- *     u16 file size
+ *     u32 file size
  *     chars file
  * }
  */
@@ -77,15 +77,15 @@ void SSCSMFileDownloader::readBunches() // todo: decompress with zlib
 
 			// todo: check whether path is in path_cache/sscsm/* and stop connecting if it is not
 
-			m_remaining_file_size = readU16(b.buffer + buffer_read_offset);
-			buffer_read_offset += 2;
+			m_remaining_file_size = readU32(b.buffer + buffer_read_offset);
+			buffer_read_offset += 4;
 
 			// create directory to file if needed
 			errorstream << "[Client] creating all dirs to:" << fs::RemoveLastPathComponent(m_current_file_path) << std::endl;
 			fs::CreateAllDirs(fs::RemoveLastPathComponent(m_current_file_path));
 		}
 
-		u16 actual_writing_length = MYMIN(m_remaining_file_size, b.size - buffer_read_offset);
+		u32 actual_writing_length = MYMIN(m_remaining_file_size, b.size - buffer_read_offset);
 
 		m_remaining_disk_space -= MYMIN(actual_writing_length, m_remaining_disk_space);
 

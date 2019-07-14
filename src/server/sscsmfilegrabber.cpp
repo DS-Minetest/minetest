@@ -85,14 +85,14 @@ void SSCSMFileGrabber::addFile(const std::string &server_path,
 	// Prepare file length writing
 	// file_length will be written to file_length_buffer when it is finished
 	u8 *file_length_buffer = m_buffer + m_buffer_offset;
-	m_buffer_offset += 2;
-	u16 file_length = 0;
+	m_buffer_offset += 4;
+	u32 file_length = 0;
 
 	// Read the file
 	std::ifstream file(server_path);
 	while (true) {
 		file.read((char *)(m_buffer + m_buffer_offset), m_buffer_size - m_buffer_offset);
-		u16 read = file.gcount();
+		u32 read = file.gcount();
 		m_buffer_offset += read;
 		file_length += read;
 		if (m_buffer_offset == m_buffer_size) {
@@ -107,7 +107,7 @@ void SSCSMFileGrabber::addFile(const std::string &server_path,
 		}
 		// buffer is not full, but file is empty
 		// save file length
-		writeU16(file_length_buffer, file_length);
+		writeU32(file_length_buffer, file_length);
 		break;
 	}
 	file.close();
@@ -120,9 +120,9 @@ void SSCSMFileGrabber::addDummyFile()
 	std::string filetext = "if foo then\n\tprint(\"bar\")\nend\n";
 
 	u8 path_length = path.size();
-	u16 file_length = filetext.size();
+	u32 file_length = filetext.size();
 
-	u8 *data = new u8[1 + path_length + 2 + file_length];
+	u8 *data = new u8[1 + path_length + 4 + file_length];
 
 	u8 *path_c = (u8 *)path.c_str();
 	u8 *filetext_c = (u8 *)filetext.c_str();
@@ -132,10 +132,10 @@ void SSCSMFileGrabber::addDummyFile()
 	for (u8 i = 0; i < path_length; i++)
 		data[i + 1] = path_c[i];
 
-	writeU16(data + 1 + path_length, file_length);
+	writeU32(data + 1 + path_length, file_length);
 
-	for (u16 i = 0; i < file_length; i++)
-		data[i + 1 + path_length + 2] = filetext_c[i];
+	for (u32 i = 0; i < file_length; i++)
+		data[i + 1 + path_length + 4] = filetext_c[i];
 
-	m_sscsm_files->emplace_back(data, 1 + path_length + 2 + file_length);
+	m_sscsm_files->emplace_back(data, 1 + path_length + 4 + file_length);
 }

@@ -43,7 +43,7 @@ private:
 	u32 m_next_bunch_index;
 
 	std::string m_current_file_path;
-	u16 m_remaining_file_size;
+	u32 m_remaining_file_size;
 
 	u64 m_remaining_disk_space;
 };
