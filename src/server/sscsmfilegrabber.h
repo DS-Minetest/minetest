@@ -4,8 +4,10 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <queue>
 #include "util/numeric.h"
 #include "server/mods.h"
+#include "zlib.h"
 
 class SSCSMFileGrabber
 {
@@ -33,10 +35,10 @@ private:
 	 */
 	void addFile(const std::string &server_path, const std::string &client_path);
 
-	//~ /*
-	 //~ * used for testing and will be removed
-	 //~ */
-	//~ void addDummyFile();
+	/*
+	 * clears m_buffer_queue by compressing the buffers and putting them into m_sscsm_files
+	 */
+	void clearQueue(bool also_clear_m_buffer);
 
 	std::vector<std::string> *m_mods;
 	std::vector<std::pair<u8 *, u32>> *m_sscsm_files;
@@ -45,4 +47,10 @@ private:
 	u8 *m_buffer;
 	u32 m_buffer_offset;
 	const u32 m_buffer_size = 32 * 1024; // todo: what size should buffers have?
+
+	z_stream m_zstream;
+
+	std::queue<u8 *> m_buffer_queue; // the size of the buffers in here is always m_buffer_size
+
+	u8 *m_out_buffer;
 };

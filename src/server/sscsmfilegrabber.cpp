@@ -5,17 +5,30 @@
 #include <fstream>
 #include "filesys.h"
 #include "string.h"
-//~ #include "zlib.h"
 
 SSCSMFileGrabber::SSCSMFileGrabber(std::vector<std::string> *mods,
 	std::vector<std::pair<u8 *, u32>> *sscsm_files,
 	const std::unique_ptr<ServerModManager> &modmgr) :
-	m_mods(mods), m_sscsm_files(sscsm_files), m_modmgr(modmgr)
+	m_mods(mods), m_sscsm_files(sscsm_files), m_modmgr(modmgr), m_buffer_queue()
 {
+	m_out_buffer = new u8[m_buffer_size];
+	m_zstream.zalloc = Z_NULL;
+	m_zstream.zfree = Z_NULL;
+	m_zstream.opaque = Z_NULL;
 }
 
-void SSCSMFileGrabber::parseMods() // todo: use zlib to compress
+void SSCSMFileGrabber::parseMods()
 {
+	// initialize the z_stream
+	int ret = deflateInit(&m_zstream, Z_DEFAULT_COMPRESSION);
+	if (ret != Z_OK) {
+		// todo: throw an error
+		errorstream << "SSCSMFileGrabber: deflateInit failed" << std::endl;
+	}
+
+	m_zstream.next_out = m_out_buffer;
+	m_zstream.avail_out = m_buffer_size;
+
 	// create first buffer
 	m_buffer_offset = 0;
 	m_buffer = new u8[m_buffer_size];
@@ -40,9 +53,38 @@ void SSCSMFileGrabber::parseMods() // todo: use zlib to compress
 		addDir(path, modname);
 	}
 
-	// add last buffer
-	m_sscsm_files->emplace_back(m_buffer, m_buffer_offset);
-	// How can I deallocate the unused end of m_buffer?
+	// flush the z_stream (and add last buffer)
+	m_zstream.next_in = m_buffer;
+	m_zstream.avail_in = m_buffer_offset;
+	do {
+		ret = deflate(&m_zstream, Z_FINISH);
+		if (ret == Z_OK)
+			errorstream << "SSCSMFileGrabber: deflate flushing OK" << std::endl;
+		else if (ret == Z_BUF_ERROR)
+			errorstream << "SSCSMFileGrabber: deflate flushing BUF_ERROR" << std::endl;
+		else
+			errorstream << "SSCSMFileGrabber: deflate flushing " << ret << std::endl;
+
+		if (m_zstream.avail_out == m_buffer_size)
+			break;
+
+		m_sscsm_files->emplace_back(m_out_buffer, m_buffer_size - m_zstream.avail_out);
+		m_out_buffer = new u8[m_buffer_size];
+		m_zstream.next_out = m_out_buffer;
+		m_zstream.avail_out = m_buffer_size;
+
+		if (ret == Z_STREAM_END)
+			break;
+	} while (true);
+
+	// end the z_stream
+	ret = deflateEnd(&m_zstream);
+	if (ret != Z_OK) {
+		// todo: throw an error
+		errorstream << "SSCSMFileGrabber: deflateEnd failed" << std::endl;
+	}
+
+	errorstream << "SSCSMFileGrabber: parseMods finished" << std::endl;
 }
 
 void SSCSMFileGrabber::addDir(const std::string &server_path,
@@ -72,6 +114,7 @@ void SSCSMFileGrabber::addFile(const std::string &server_path,
 			client_path << std::endl;
 
 	// Add client_path to buffer
+	// (the buffer always has enough space free, see below)
 	u8 path_length = client_path.length();
 	writeU8(m_buffer + m_buffer_offset, path_length);
 	m_buffer_offset++;
@@ -95,8 +138,8 @@ void SSCSMFileGrabber::addFile(const std::string &server_path,
 		file_length += readl;
 		if (m_buffer_offset == m_buffer_size) {
 			// buffer is full, file probably not empty
-			// add buffer to m_sscsm_files
-			m_sscsm_files->emplace_back(m_buffer, m_buffer_size);
+			// add buffer to m_buffer_queue
+			m_buffer_queue.push(m_buffer);
 			// make new buffer
 			m_buffer_offset = 0;
 			m_buffer = new u8[m_buffer_size];
@@ -105,34 +148,61 @@ void SSCSMFileGrabber::addFile(const std::string &server_path,
 		// buffer is not full, but file is empty
 		// save file length
 		writeU32(file_length_buffer, file_length);
+		// compress buffers
+		// and ensure that m_buffer has enough space free for the next path
+		clearQueue(m_buffer_size < m_buffer_offset + 1 + 256);
 		break;
 	}
 	file.close();
 }
 
-//~ void SSCSMFileGrabber::addDummyFile()
-//~ {
-	//~ // make a dummy for testing
-	//~ std::string path = "test.txt";
-	//~ std::string filetext = "if foo then\n\tprint(\"bar\")\nend\n";
+void SSCSMFileGrabber::clearQueue(bool also_clear_m_buffer)
+{
+	int ret = 0;
+	while (!m_buffer_queue.empty()) {
+		u8 *buffer = m_buffer_queue.front();
 
-	//~ u8 path_length = path.size();
-	//~ u32 file_length = filetext.size();
+		m_zstream.next_in = buffer;
+		m_zstream.avail_in = m_buffer_size;
 
-	//~ u8 *data = new u8[1 + path_length + 4 + file_length];
+		do {
+			deflate(&m_zstream, Z_NO_FLUSH);
+			if (ret != Z_OK)
+				errorstream << "SSCSMFileGrabber: deflate queue failed" << std::endl;
+			if (m_zstream.avail_out > 0)
+				break;
 
-	//~ u8 *path_c = (u8 *)path.c_str();
-	//~ u8 *filetext_c = (u8 *)filetext.c_str();
+			// m_out_buffer is full, save it and continue compressing
+			m_sscsm_files->emplace_back(m_out_buffer, m_buffer_size);
+			m_out_buffer = new u8[m_buffer_size];
+			m_zstream.next_out = m_out_buffer;
+			m_zstream.avail_out = m_buffer_size;
 
-	//~ writeU8(data, path_length);
+		} while (m_zstream.avail_in > 0);
 
-	//~ for (u8 i = 0; i < path_length; i++)
-		//~ data[i + 1] = path_c[i];
+		// todo: delete[] buffer; ?
 
-	//~ writeU32(data + 1 + path_length, file_length);
+		m_buffer_queue.pop();
+	}
 
-	//~ for (u32 i = 0; i < file_length; i++)
-		//~ data[i + 1 + path_length + 4] = filetext_c[i];
+	if (!also_clear_m_buffer)
+		return;
 
-	//~ m_sscsm_files->emplace_back(data, 1 + path_length + 4 + file_length);
-//~ }
+	m_zstream.next_in = m_buffer;
+	m_zstream.avail_in = m_buffer_offset;
+
+	do {
+		deflate(&m_zstream, Z_NO_FLUSH);
+		if (ret != Z_OK)
+			errorstream << "SSCSMFileGrabber: deflate also_clear_m_buffer failed" << std::endl;
+		if (m_zstream.avail_out > 0)
+			break;
+
+		// m_out_buffer is full, save it and continue compressing
+		m_sscsm_files->emplace_back(m_out_buffer, m_buffer_size);
+		m_out_buffer = new u8[m_buffer_size];
+		m_zstream.next_out = m_out_buffer;
+		m_zstream.avail_out = m_buffer_size;
+
+	} while (m_zstream.avail_in > 0);
+}
