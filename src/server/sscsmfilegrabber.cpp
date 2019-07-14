@@ -58,12 +58,6 @@ void SSCSMFileGrabber::parseMods()
 	m_zstream.avail_in = m_buffer_offset;
 	do {
 		ret = deflate(&m_zstream, Z_FINISH);
-		if (ret == Z_OK)
-			errorstream << "SSCSMFileGrabber: deflate flushing OK" << std::endl;
-		else if (ret == Z_BUF_ERROR)
-			errorstream << "SSCSMFileGrabber: deflate flushing BUF_ERROR" << std::endl;
-		else
-			errorstream << "SSCSMFileGrabber: deflate flushing " << ret << std::endl;
 
 		if (m_zstream.avail_out == m_buffer_size)
 			break;
@@ -83,8 +77,6 @@ void SSCSMFileGrabber::parseMods()
 		// todo: throw an error
 		errorstream << "SSCSMFileGrabber: deflateEnd failed" << std::endl;
 	}
-
-	errorstream << "SSCSMFileGrabber: parseMods finished" << std::endl;
 }
 
 void SSCSMFileGrabber::addDir(const std::string &server_path,
@@ -158,7 +150,6 @@ void SSCSMFileGrabber::addFile(const std::string &server_path,
 
 void SSCSMFileGrabber::clearQueue(bool also_clear_m_buffer)
 {
-	int ret = 0;
 	while (!m_buffer_queue.empty()) {
 		u8 *buffer = m_buffer_queue.front();
 
@@ -167,8 +158,6 @@ void SSCSMFileGrabber::clearQueue(bool also_clear_m_buffer)
 
 		do {
 			deflate(&m_zstream, Z_NO_FLUSH);
-			if (ret != Z_OK)
-				errorstream << "SSCSMFileGrabber: deflate queue failed" << std::endl;
 			if (m_zstream.avail_out > 0)
 				break;
 
@@ -193,8 +182,6 @@ void SSCSMFileGrabber::clearQueue(bool also_clear_m_buffer)
 
 	do {
 		deflate(&m_zstream, Z_NO_FLUSH);
-		if (ret != Z_OK)
-			errorstream << "SSCSMFileGrabber: deflate also_clear_m_buffer failed" << std::endl;
 		if (m_zstream.avail_out > 0)
 			break;
 

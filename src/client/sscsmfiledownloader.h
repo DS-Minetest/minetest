@@ -6,7 +6,6 @@
 #include "util/string.h"
 #include "util/numeric.h"
 #include "zlib.h"
-#include "log.h"
 
 class SSCSMFileDownloader
 {
@@ -23,7 +22,6 @@ private:
 		bunch(u32 ai, u8 *abuffer, u32 asize) :
 			i(ai), buffer(abuffer), size(asize)
 		{
-			errorstream << "SSCSMFileDownloader::bunch constructor" << std::endl;
 		}
 
 		u32 i;
