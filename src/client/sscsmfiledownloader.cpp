@@ -4,6 +4,7 @@
 #include "util/serialize.h"
 #include "filesys.h"
 #include <fstream>
+#include "settings.h"
 
 /*
  * data in decompressed buffers:
@@ -20,8 +21,7 @@ SSCSMFileDownloader::SSCSMFileDownloader(u32 bunches_count) :
 	m_bunches(), m_bunches_count(bunches_count), m_next_bunch_index(0),
 	m_current_file_path(""), m_read_length(0)
 {
-	// todo: get m_remaining_disk_space from a setting
-	m_remaining_disk_space = 1000000;
+	m_remaining_disk_space = g_settings->getU64("sscsm_file_size_limit");
 
 	m_buffer = new u8[m_buffer_size];
 
