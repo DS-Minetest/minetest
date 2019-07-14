@@ -27,13 +27,6 @@ SSCSMFileDownloader::SSCSMFileDownloader(u32 bunches_count) :
 
 void SSCSMFileDownloader::addBunch(u32 i, u8 *buffer, u32 size)
 {
-	// this would not be good with compressing
-	//~ m_remaining_disk_space -= MYMIN(size, m_remaining_disk_space);
-	//~ if (m_remaining_disk_space == 0) {
-		//~ errorstream << "too much sscsm file data, it might be harmful" << std::endl;
-		//~ // todo: stop connecting to server
-	//~ }
-
 	m_bunches.emplace(i, buffer, size);
 
 	if (!m_bunches.empty() && m_bunches.top().i <= m_next_bunch_index) {
@@ -41,7 +34,9 @@ void SSCSMFileDownloader::addBunch(u32 i, u8 *buffer, u32 size)
 	}
 
 	if (m_next_bunch_index >= m_bunches_count) {
-		errorstream << "[SSCSMFileDownloader::addBunch] finished" << std::endl;
+		// todo: should this happen somewhere else?
+		// todo: verbosestream
+		actionstream << "[Client] finished downloading sscsm files" << std::endl;
 	}
 }
 
@@ -52,21 +47,21 @@ void SSCSMFileDownloader::readBunches() // todo: decompress with zlib
 	m_bunches.pop();
 	u32 buffer_read_offset = 0;
 
-	while (b.size > buffer_read_offset/* + 1?*/) {
+	while (b.size > buffer_read_offset) {
 		// The buffer is not empty
 
 		if (m_current_file_path.empty()) {
 			// Read the file path
 			u8 path_length = readU8(b.buffer + buffer_read_offset);
 			buffer_read_offset++;
+
 			// todo: path_length could be larger than b.size - buffer_read_offset
 			if (path_length > b.size - buffer_read_offset)
-				errorstream << "ahhhhhhhh" << std::endl;
+				errorstream << "[Client] SSCSMFileDownloader: path cut off" << std::endl;
 
-			m_current_file_path = std::string((char *)(b.buffer + buffer_read_offset), path_length);
+			m_current_file_path = std::string((char *)(b.buffer + buffer_read_offset),
+					path_length);
 			buffer_read_offset += path_length;
-			errorstream << "[Client] new file path:" << m_current_file_path << std::endl;
-			errorstream << "[Client] buffer_read_offset:" << buffer_read_offset << std::endl;
 
 #ifdef _WIN32 // DIR_DELIM is not "/"
 			m_current_file_path = str_replace(m_current_file_path, "/", DIR_DELIM);
@@ -81,7 +76,6 @@ void SSCSMFileDownloader::readBunches() // todo: decompress with zlib
 			buffer_read_offset += 4;
 
 			// create directory to file if needed
-			errorstream << "[Client] creating all dirs to:" << fs::RemoveLastPathComponent(m_current_file_path) << std::endl;
 			fs::CreateAllDirs(fs::RemoveLastPathComponent(m_current_file_path));
 		}
 
@@ -98,10 +92,6 @@ void SSCSMFileDownloader::readBunches() // todo: decompress with zlib
 		std::ofstream file(m_current_file_path, std::ios_base::app);
 		file.write((char *)(b.buffer + buffer_read_offset), actual_writing_length);
 		file.close();
-
-		//~ errorstream << "[Client] append from bunch " << b.i << " to file \"" <<
-			//~ m_current_file_path << "\": " << std::endl;
-		//~ errorstream << std::string((char *)(b.buffer + buffer_read_offset), actual_writing_length) << std::endl;
 
 		buffer_read_offset += actual_writing_length;
 		m_remaining_file_size -= actual_writing_length;

@@ -322,9 +322,8 @@ void Server::handleCommand_Init2(NetworkPacket* pkt)
 
 	SendCSMRestrictionFlags(pkt->getPeerId());
 
-	SendSSCSMBla(pkt->getPeerId()); //hier
-	SendSSCSMTestfile(pkt->getPeerId());
-	SendSSCSMAnnounce(pkt->getPeerId());
+	// Send sscsm stuff
+	SendSSCSMAnnounce(pkt->getPeerId()); //hier
 	SendSSCSMFiles(pkt->getPeerId());
 
 	// Warnings about protocol version can be issued here

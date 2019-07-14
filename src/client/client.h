@@ -228,9 +228,7 @@ public:
 	void handleCommand_SrpBytesSandB(NetworkPacket *pkt);
 	void handleCommand_FormspecPrepend(NetworkPacket *pkt);
 	void handleCommand_CSMRestrictionFlags(NetworkPacket *pkt);
-	void handleCommand_SSCSMBla(NetworkPacket *pkt); //hier
-	void handleCommand_SSCSMTestfile(NetworkPacket *pkt);
-	void handleCommand_SSCSMAnnounce(NetworkPacket *pkt);
+	void handleCommand_SSCSMAnnounce(NetworkPacket *pkt); //hier
 	void handleCommand_SSCSMFileBunch(NetworkPacket *pkt);
 
 	void ProcessData(NetworkPacket *pkt);

@@ -40,7 +40,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/srp.h"
 #include "tileanimation.h"
 #include "gettext.h"
-#include "filesys.h"
 
 void Client::handleCommand_Deprecated(NetworkPacket* pkt)
 {
@@ -1382,47 +1381,6 @@ void Client::handleCommand_CSMRestrictionFlags(NetworkPacket *pkt)
 	// Restrictions were received -> load mods if it's enabled
 	// Note: this should be moved after mods receptions from server instead
 	loadMods();
-}
-
-void Client::handleCommand_SSCSMBla(NetworkPacket *pkt) //hier
-{
-	/*
-		u8 bla1
-		std::string bla2
-	*/
-	u8 bla1;
-	std::string bla2;
-	*pkt >> bla1 >> bla2;
-	errorstream << "SSCSM bla1: " << std::to_string((int)bla1) <<
-		" bla2: " << bla2 << std::endl;
-}
-
-void Client::handleCommand_SSCSMTestfile(NetworkPacket *pkt) //hier
-{
-	/*
-		u16 total number of file bunches
-		u16 index of this bunch
-		std::string text
-		(maybe a checksum would be good here)
-	*/
-
-	//~ u16 bunch_n, bunch_i;
-	std::string text;
-
-	//~ *pkt >> bunch_n >> bunch_i;
-	//~ *pkt >> text;
-	text = pkt->readLongString();
-
-	//~ errorstream << porting::path_cache + DIR_DELIM + "sscsm_testfile.txt" << std::endl;
-	errorstream << "[Client] writing to file" << std::endl;
-	std::ofstream file(porting::path_cache + DIR_DELIM + "sscsm_testfile.txt");
-	file << text;
-	file.close();
-
-	//~ if (!m_sscsm_testfile_downloader)
-		//~ m_sscsm_testfile_downloader = new ClientSSCSMTestfileDownloader(bunch_n);
-
-	//~ m_sscsm_testfile_downloader->addBunch(bunch_n - bunch_i, text);
 }
 
 void Client::handleCommand_SSCSMAnnounce(NetworkPacket *pkt) //hier

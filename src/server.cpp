@@ -355,7 +355,6 @@ void Server::init()
 	//hier
 	// Fill sscsm files and names cache
 	m_sscsms = std::vector<std::string>();
-	//~ m_modmgr->getModNames(m_sscsms);
 	m_sscsm_files = std::vector<std::pair<u8 *, u32>>();
 	SSCSMFileGrabber sscsm_file_grabber(&m_sscsms, &m_sscsm_files, m_modmgr);
 	sscsm_file_grabber.parseMods();
@@ -1967,47 +1966,11 @@ void Server::SendCSMRestrictionFlags(session_t peer_id)
 	Send(&pkt);
 }
 
-void Server::SendSSCSMBla(session_t peer_id) //hier
-{
-	std::string bla2 = "foo";
-	NetworkPacket pkt(TOCLIENT_SSCSM_BLA, 1 + bla2.length(), peer_id);
-	pkt << (u8)4 << bla2; // send a random number
-	Send(&pkt);
-}
-
-void Server::SendSSCSMTestfile(session_t peer_id)
-{
-	//~ std::ifstream file(porting::path_user + DIR_DELIM + "sscsm_testfile.txt");
-	//~ std::string filetext;
-	//~ file.get(filetext, file.get);
-	//~ file.close();
-	//~ NetworkPacket pkt(TOCLIENT_SSCSM_TESTFILE, 2 + 2 + filetext.length(), peer_id);
-	//~ pkt << (u16)1 << (u16)0 << filetext;
-	//~ Send(&pkt);
-
-	// open the file
-	std::ifstream file(porting::path_user + DIR_DELIM + "sscsm_testfile.txt");
-
-	// get the file size
-	//~ u32 filesize = sizeof file; //no, this is bad
-	file.seekg(0, std::ios_base::end);
-	u32 filesize = file.tellg();
-	file.seekg(0, std::ios_base::beg);
-	NetworkPacket pkt(TOCLIENT_SSCSM_TESTFILE, /*2 + 2 + */filesize, peer_id);
-	//~ pkt << (u16)1 << (u16)0; // dummy stuff
-	char *text = new char[filesize];
-	file.read(text, filesize);
-	pkt.putLongString(std::string(text, filesize));
-	//~ errorstream << "[Server] sending text: " << std::string(text, filesize) << std::endl;
-	Send(&pkt);
-	delete[] text;
-	file.close();
-}
-
 void Server::SendSSCSMAnnounce(session_t peer_id) //hier
 {
 	// Send all modnames
-	u32 size = 2; // u16 count
+	u32 size = 0;
+	size += 2; // u16 count
 	for (std::string modname : m_sscsms)
 		size += modname.length();
 	NetworkPacket pkt(TOCLIENT_SSCSM_ANNOUNCE, size, peer_id);

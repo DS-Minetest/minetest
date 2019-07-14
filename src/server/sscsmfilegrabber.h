@@ -33,10 +33,10 @@ private:
 	 */
 	void addFile(const std::string &server_path, const std::string &client_path);
 
-	/*
-	 * used for testing and will be removed
-	 */
-	void addDummyFile();
+	//~ /*
+	 //~ * used for testing and will be removed
+	 //~ */
+	//~ void addDummyFile();
 
 	std::vector<std::string> *m_mods;
 	std::vector<std::pair<u8 *, u32>> *m_sscsm_files;
@@ -44,5 +44,5 @@ private:
 
 	u8 *m_buffer;
 	u32 m_buffer_offset;
-	const u32 m_buffer_size = 32 * 1024;
+	const u32 m_buffer_size = 32 * 1024; // todo: what size should buffers have?
 };

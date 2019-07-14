@@ -473,8 +473,6 @@ private:
 	void SendCSMRestrictionFlags(session_t peer_id);
 
 	// sscsm stuff
-	void SendSSCSMBla(session_t peer_id); //hier
-	void SendSSCSMTestfile(session_t peer_id);
 	void SendSSCSMAnnounce(session_t peer_id); //hier
 	void SendSSCSMFiles(session_t peer_id);
 
