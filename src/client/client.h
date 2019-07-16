@@ -38,7 +38,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "network/address.h"
 #include "network/peerhandler.h"
 #include <fstream>
-#include "sscsmfiledownloader.h"
 
 #define CLIENT_CHAT_MESSAGE_LIMIT_PER_10S 10.0f
 
@@ -53,6 +52,7 @@ class ISoundManager;
 class NodeDefManager;
 //class IWritableCraftDefManager;
 class ClientMediaDownloader;
+class SSCSMFileDownloader;
 struct MapDrawControl;
 class ModChannelMgr;
 class MtEventManager;

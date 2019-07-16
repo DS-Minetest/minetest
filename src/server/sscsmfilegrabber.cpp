@@ -5,6 +5,7 @@
 #include <fstream>
 #include "filesys.h"
 #include "string.h"
+#include "server/mods.h"
 
 SSCSMFileGrabber::SSCSMFileGrabber(std::vector<std::string> *mods,
 	std::vector<std::pair<u8 *, u32>> *sscsm_files,

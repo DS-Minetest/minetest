@@ -1,13 +1,15 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-#include <utility>
+#include <memory>
 #include <queue>
+#include <string>
+#include <utility>
+#include <vector>
 #include "util/numeric.h"
-#include "server/mods.h"
 #include "zlib.h"
+
+class ServerModManager;
 
 class SSCSMFileGrabber
 {
