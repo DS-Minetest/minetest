@@ -18,6 +18,8 @@ public:
 		std::vector<std::pair<u8 *, u32>> *sscsm_files,
 		const std::unique_ptr<ServerModManager> &modmgr);
 
+	~SSCSMFileGrabber();
+
 	/*
 	 * parse all mods for sscsm and remove them from the mods list if they do not
 	 * have a sscsm
@@ -48,7 +50,7 @@ private:
 
 	u8 *m_buffer;
 	u32 m_buffer_offset;
-	const u32 m_buffer_size = 32 * 1024; // todo: what size should buffers have?
+	const u32 m_buffer_size = 1024; // todo: what size should buffers have?
 
 	z_stream m_zstream;
 

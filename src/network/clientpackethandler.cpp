@@ -1423,7 +1423,9 @@ void Client::handleCommand_SSCSMFileBunch(NetworkPacket *pkt) //hier
 	if (!m_sscsm_file_downloader)
 		m_sscsm_file_downloader = new SSCSMFileDownloader(file_bunches_count);
 
-	m_sscsm_file_downloader->addBunch(i, buffer, size);
+	bool finished = m_sscsm_file_downloader->addBunch(i, buffer, size);
+	if (finished)
+		delete m_sscsm_file_downloader;
 }
 
 /*

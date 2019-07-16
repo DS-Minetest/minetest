@@ -6,6 +6,7 @@
 #include "filesys.h"
 #include "string.h"
 #include "server/mods.h"
+#include "exceptions.h"
 
 SSCSMFileGrabber::SSCSMFileGrabber(std::vector<std::string> *mods,
 	std::vector<std::pair<u8 *, u32>> *sscsm_files,
@@ -18,14 +19,17 @@ SSCSMFileGrabber::SSCSMFileGrabber(std::vector<std::string> *mods,
 	m_zstream.opaque = Z_NULL;
 }
 
+SSCSMFileGrabber::~SSCSMFileGrabber()
+{
+	delete[] m_out_buffer;
+}
+
 void SSCSMFileGrabber::parseMods()
 {
 	// initialize the z_stream
 	int ret = deflateInit(&m_zstream, Z_DEFAULT_COMPRESSION);
-	if (ret != Z_OK) {
-		// todo: throw an error
-		errorstream << "SSCSMFileGrabber: deflateInit failed" << std::endl;
-	}
+	if (ret < 0)
+		throw SerializationError("SSCSMFileGrabber: deflateInit failed");
 
 	m_zstream.next_out = m_out_buffer;
 	m_zstream.avail_out = m_buffer_size;
@@ -59,6 +63,8 @@ void SSCSMFileGrabber::parseMods()
 	m_zstream.avail_in = m_buffer_offset;
 	do {
 		ret = deflate(&m_zstream, Z_FINISH);
+		if (ret < 0)
+			throw SerializationError("SSCSMFileGrabber: deflate failed");
 
 		if (m_zstream.avail_out == m_buffer_size)
 			break;
@@ -74,10 +80,10 @@ void SSCSMFileGrabber::parseMods()
 
 	// end the z_stream
 	ret = deflateEnd(&m_zstream);
-	if (ret != Z_OK) {
-		// todo: throw an error
-		errorstream << "SSCSMFileGrabber: deflateEnd failed" << std::endl;
-	}
+	if (ret < 0)
+		throw SerializationError("SSCSMFileGrabber: deflateEnd failed");
+
+	delete[] m_buffer;
 }
 
 void SSCSMFileGrabber::addDir(const std::string &server_path,
@@ -151,6 +157,8 @@ void SSCSMFileGrabber::addFile(const std::string &server_path,
 
 void SSCSMFileGrabber::clearQueue(bool also_clear_m_buffer)
 {
+	int ret = 0;
+
 	while (!m_buffer_queue.empty()) {
 		u8 *buffer = m_buffer_queue.front();
 
@@ -158,7 +166,10 @@ void SSCSMFileGrabber::clearQueue(bool also_clear_m_buffer)
 		m_zstream.avail_in = m_buffer_size;
 
 		do {
-			deflate(&m_zstream, Z_NO_FLUSH);
+			ret = deflate(&m_zstream, Z_NO_FLUSH);
+			if (ret < 0)
+				throw SerializationError("SSCSMFileGrabber: deflate failed");
+
 			if (m_zstream.avail_out > 0)
 				break;
 
@@ -170,8 +181,7 @@ void SSCSMFileGrabber::clearQueue(bool also_clear_m_buffer)
 
 		} while (m_zstream.avail_in > 0);
 
-		// todo: delete[] buffer; ?
-
+		delete[] buffer;
 		m_buffer_queue.pop();
 	}
 
@@ -182,7 +192,10 @@ void SSCSMFileGrabber::clearQueue(bool also_clear_m_buffer)
 	m_zstream.avail_in = m_buffer_offset;
 
 	do {
-		deflate(&m_zstream, Z_NO_FLUSH);
+		ret = deflate(&m_zstream, Z_NO_FLUSH);
+		if (ret < 0)
+			throw SerializationError("SSCSMFileGrabber: deflate failed");
+
 		if (m_zstream.avail_out > 0)
 			break;
 

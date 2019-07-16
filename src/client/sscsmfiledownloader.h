@@ -14,7 +14,10 @@ public:
 
 	~SSCSMFileDownloader();
 
-	void addBunch(u32 i, u8 *buffer, u32 size);
+	/*
+	 * Returns true when finished
+	 */
+	bool addBunch(u32 i, u8 *buffer, u32 size);
 
 private:
 	struct bunch

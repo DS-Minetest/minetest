@@ -290,6 +290,11 @@ Server::~Server()
 		delete m_thread;
 	}
 
+	for (std::pair<u8 *, u32> i : m_sscsm_files) {
+		delete[] i.first;
+	}
+	m_sscsm_files.clear();
+
 	// Delete things in the reverse order of creation
 	delete m_emerge;
 	delete m_env;

@@ -5,6 +5,7 @@
 #include "filesys.h"
 #include <fstream>
 #include "settings.h"
+#include "exceptions.h"
 
 /*
  * data in decompressed buffers:
@@ -31,10 +32,8 @@ SSCSMFileDownloader::SSCSMFileDownloader(u32 bunches_count) :
 	m_zstream.opaque = Z_NULL;
 
 	int ret = inflateInit(&m_zstream);
-	if (ret != Z_OK) {
-		// todo: throw an error
-		errorstream << "SSCSMFileDownloader: inflateInit failed" << std::endl;
-	}
+	if (ret < 0)
+		throw SerializationError("SSCSMFileDownloader: inflateInit failed");
 
 	m_zstream.avail_in = 0;
 
@@ -46,7 +45,7 @@ SSCSMFileDownloader::~SSCSMFileDownloader()
 	delete[] m_buffer;
 }
 
-void SSCSMFileDownloader::addBunch(u32 i, u8 *buffer, u32 size)
+bool SSCSMFileDownloader::addBunch(u32 i, u8 *buffer, u32 size)
 {
 	// emplace into priority queue to ensure that the bunches are read in the
 	// correct order
@@ -57,18 +56,22 @@ void SSCSMFileDownloader::addBunch(u32 i, u8 *buffer, u32 size)
 	}
 
 	if (m_next_bunch_index < m_bunches_count)
-		return;
+		return false;
 
 	// all bunches are added
 
-	// todo: should this message been written somewhere else?
 	// todo: verbosestream
 	actionstream << "[Client] finished downloading sscsm files" << std::endl;
 
-	// todo: get last buffer (no, it will be empty)
+	// todo: get last buffer? (no, it will be empty)
 
 	// end z_stream
-	inflateEnd(&m_zstream);
+	int ret = inflateEnd(&m_zstream);
+	if (ret < 0) {
+		throw SerializationError("SSCSMFileDownloader: inflateEnd failed");
+	}
+
+	return true;
 }
 
 void SSCSMFileDownloader::readBunches()
@@ -76,7 +79,7 @@ void SSCSMFileDownloader::readBunches()
 	// Read a single bunch
 	const bunch &b = m_bunches.top();
 
-	int ret = 0; // todo: use this?
+	int ret = 0;
 
 	m_zstream.next_in = b.buffer;
 	m_zstream.avail_in = b.size;
@@ -90,6 +93,8 @@ void SSCSMFileDownloader::readBunches()
 			m_zstream.next_out = m_buffer;
 			m_zstream.avail_out = 1;
 			ret = inflate(&m_zstream, Z_SYNC_FLUSH);
+			if (ret < 0)
+				throw SerializationError("SSCSMFileDownloader: inflate failed (step 1)");
 
 			if (m_zstream.avail_out == 0) {
 				// a byte was read
@@ -105,6 +110,8 @@ void SSCSMFileDownloader::readBunches()
 		} else if (m_current_file_path.empty()) { // step 2
 			// decompress the path into buffer
 			ret = inflate(&m_zstream, Z_SYNC_FLUSH);
+			if (ret < 0)
+				throw SerializationError("SSCSMFileDownloader: inflate failed (step 2)");
 
 			if (m_zstream.avail_out == 0) {
 				// the whole path is read into buffer
@@ -112,8 +119,8 @@ void SSCSMFileDownloader::readBunches()
 
 				// check whether path is in path_cache/sscsm/* (this might be not good enough)
 				if (m_current_file_path.find("..") != std::string::npos) {
-					errorstream << "SSCSMFileDownloader::readBunches: the server is evil" << std::endl;
-					// todo: stop connecting
+					// todo: translate?
+					throw SerializationError("The server wanted to write somewhere into your filesystem, it is evil.");
 				}
 
 #ifdef _WIN32 // DIR_DELIM is not "/"
@@ -122,9 +129,6 @@ void SSCSMFileDownloader::readBunches()
 
 				m_current_file_path = porting::path_cache + DIR_DELIM + "sscsm" +
 						DIR_DELIM + m_current_file_path;
-
-				// todo: check whether path is in path_cache/sscsm/* and todo: stop connecting if it is not
-				// maybe that up there is enough
 
 				// create directory to file if needed
 				fs::CreateAllDirs(fs::RemoveLastPathComponent(m_current_file_path));
@@ -140,6 +144,8 @@ void SSCSMFileDownloader::readBunches()
 		} else if (m_read_length == 0) { // step 3
 			// decompress the file length into buffer
 			ret = inflate(&m_zstream, Z_SYNC_FLUSH);
+			if (ret < 0)
+				throw SerializationError("SSCSMFileDownloader: inflate failed (step 3)");
 
 			if (m_zstream.avail_out == 0) {
 				// the file length was read
@@ -163,14 +169,17 @@ void SSCSMFileDownloader::readBunches()
 		} else { // step 4
 			// read the file and write it
 			ret = inflate(&m_zstream, Z_SYNC_FLUSH);
+			if (ret < 0)
+				throw SerializationError("SSCSMFileDownloader: inflate failed (step 4)");
 
 			if (m_zstream.avail_out == 0) {
 				// append to the file
 				u32 readc = MYMIN(m_read_length, m_buffer_size);
 				if (m_remaining_disk_space < readc) {
-					errorstream << "too much sscsm file data, it might be harmful"
-						<< std::endl;
-					// todo: stop connecting to server
+					// todo: translate this?
+					// todo: SerializationError is probably not correct
+					// todo: give more information (newlines?)
+					throw SerializationError("There was too much SSCSM file data.");
 				}
 				m_remaining_disk_space -= readc;
 				std::ofstream file(m_current_file_path, std::ios_base::app);
@@ -192,11 +201,8 @@ void SSCSMFileDownloader::readBunches()
 		}
 	}
 
-	// remove unused variable compiler warning (todo: remove this)
-	verbosestream << "ret: " << ret << std::endl;
-
+	delete[] b.buffer;
 	m_bunches.pop();
-	// todo: delete &b; ?
 
 	// Read the next bunch
 	m_next_bunch_index++;
