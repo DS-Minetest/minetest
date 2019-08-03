@@ -1975,23 +1975,32 @@ void Server::SendSSCSMAnnounce(session_t peer_id) //hier
 {
 	// Send all modnames
 	u32 size = 0;
+
 	size += 2; // u16 count
+
 	for (std::string modname : m_sscsms)
 		size += modname.length();
+
+	size += 4; // u32 bunches_count
+
 	NetworkPacket pkt(TOCLIENT_SSCSM_ANNOUNCE, size, peer_id);
+
 	pkt << (u16)m_sscsms.size();
+
 	for (std::string modname : m_sscsms)
 		pkt << modname;
+
+	pkt << (u32)m_sscsm_files.size();
+
 	Send(&pkt);
 }
 
 void Server::SendSSCSMFiles(session_t peer_id)
 {
-	u32 count = m_sscsm_files.size();
 	u32 i = 0;
 	for (std::pair<u8 *, u32> b : m_sscsm_files) {
-		NetworkPacket pkt(TOCLIENT_SSCSM_FILE_BUNCH, 4 + 4 + 4 + b.second, peer_id);
-		pkt << count << i << b.second;
+		NetworkPacket pkt(TOCLIENT_SSCSM_FILE_BUNCH, 4 + 4 + b.second, peer_id);
+		pkt << i << b.second;
 		for (u32 k = 0; k < b.second; k++)
 			pkt << b.first[k];
 		Send(&pkt);

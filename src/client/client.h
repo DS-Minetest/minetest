@@ -52,7 +52,7 @@ class ISoundManager;
 class NodeDefManager;
 //class IWritableCraftDefManager;
 class ClientMediaDownloader;
-class SSCSMFileDownloader;
+class SSCSMLoader;
 struct MapDrawControl;
 class ModChannelMgr;
 class MtEventManager;
@@ -551,7 +551,7 @@ private:
 	bool m_mods_loaded = false;
 	ClientMediaDownloader *m_media_downloader;
 
-	SSCSMFileDownloader *m_sscsm_file_downloader; //hier
+	SSCSMLoader *m_sscsm_loader; //hier
 
 	// time_of_day speed approximation for old protocol
 	bool m_time_of_day_set = false;

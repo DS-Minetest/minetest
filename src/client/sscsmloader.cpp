@@ -1,5 +1,5 @@
 
-#include "sscsmfiledownloader.h"
+#include "sscsmloader.h"
 #include "porting.h"
 #include "util/serialize.h"
 #include "filesys.h"
@@ -18,14 +18,11 @@
  */
 
 
-SSCSMFileDownloader::SSCSMFileDownloader(u32 bunches_count) :
+SSCSMLoader::SSCSMLoader(u32 bunches_count, std::vector<std::string> sscsms) :
 	m_bunches(), m_bunches_count(bunches_count), m_next_bunch_index(0),
-	m_current_file_path(""), m_read_length(0)
+	m_sscsms(sscsms), m_current_buffer(nullptr), m_current_file_path(""),
+	m_read_length(0)
 {
-	m_remaining_disk_space = g_settings->getU64("sscsm_file_size_limit");
-
-	m_buffer = new u8[m_buffer_size];
-
 	// initaialize the z_stream
 	m_zstream.zalloc = Z_NULL;
 	m_zstream.zfree = Z_NULL;
@@ -37,15 +34,19 @@ SSCSMFileDownloader::SSCSMFileDownloader(u32 bunches_count) :
 
 	m_zstream.avail_in = 0;
 
-	fs::CreateAllDirs(porting::path_cache + DIR_DELIM + "sscsm");
+	//~ fs::CreateAllDirs(porting::path_cache + DIR_DELIM + "sscsm");
 }
 
-SSCSMFileDownloader::~SSCSMFileDownloader()
+SSCSMLoader::~SSCSMLoader()
 {
-	delete[] m_buffer;
+	//~ delete[] m_buffer;
+
+	for (auto file_it = m_files.begin(); file_it != m_files.end(); ++file_it) {
+		delete[] file_it->second.first;
+	}
 }
 
-bool SSCSMFileDownloader::addBunch(u32 i, u8 *buffer, u32 size)
+bool SSCSMLoader::addBunch(u32 i, u8 *buffer, u32 size)
 {
 	// emplace into priority queue to ensure that the bunches are read in the
 	// correct order
@@ -71,10 +72,12 @@ bool SSCSMFileDownloader::addBunch(u32 i, u8 *buffer, u32 size)
 		throw SerializationError("SSCSMFileDownloader: inflateEnd failed");
 	}
 
+	loadMods();
+
 	return true;
 }
 
-void SSCSMFileDownloader::readBunches()
+void SSCSMLoader::readBunches()
 {
 	// Read a single bunch
 	const bunch &b = m_bunches.top();
@@ -88,20 +91,20 @@ void SSCSMFileDownloader::readBunches()
 		// the if cases (steps) are ordered in the temporal order in which they happen
 
 		if (m_read_length == 0 && m_current_file_path.empty()) { // step 1
-			// decompress the path length into buffer
+			// decompress the path length
 			// it is just one byte, hence we can set next_out and avail_out every time
-			m_zstream.next_out = m_buffer;
+			m_read_length = 0;
+			m_zstream.next_out = (u8 *)&m_read_length; // write the first byte of the u32
 			m_zstream.avail_out = 1;
 			ret = inflate(&m_zstream, Z_SYNC_FLUSH);
 			if (ret < 0)
 				throw SerializationError("SSCSMFileDownloader: inflate failed (step 1)");
 
 			if (m_zstream.avail_out == 0) {
-				// a byte was read
-				m_read_length = readU8(m_buffer);
-
 				// prepare step 2
-				m_zstream.next_out = m_buffer;
+				m_read_length = (u32)readU8((u8 *)&m_read_length); // read the first byte
+				m_current_buffer = new u8[m_read_length]; // buffer for path string
+				m_zstream.next_out = m_current_buffer;
 				m_zstream.avail_out = m_read_length;
 			}
 
@@ -115,9 +118,11 @@ void SSCSMFileDownloader::readBunches()
 
 			if (m_zstream.avail_out == 0) {
 				// the whole path is read into buffer
-				m_current_file_path = std::string((char *)m_buffer, m_read_length);
+				m_current_file_path = std::string((char *)m_current_buffer, m_read_length);
+				delete[] m_current_buffer;
 
-				// check whether path is in path_cache/sscsm/* (this might be not good enough)
+				/* code for file writing
+				// check whether path is in path_cache/sscsm/ * (this might be not good enough)
 				if (m_current_file_path.find("..") != std::string::npos) {
 					// todo: translate?
 					throw SerializationError("The server wanted to write somewhere into your filesystem, it is evil.");
@@ -132,11 +137,13 @@ void SSCSMFileDownloader::readBunches()
 
 				// create directory to file if needed
 				fs::CreateAllDirs(fs::RemoveLastPathComponent(m_current_file_path));
+				*/
 
-				m_read_length = 0;
 				// prepare step 3
-				m_zstream.next_out = m_buffer;
-				m_zstream.avail_out = 4; // u32
+				m_read_length = 0;
+				m_current_buffer = new u8[4]; // u32 file_size
+				m_zstream.next_out = m_current_buffer;
+				m_zstream.avail_out = 4;
 			}
 
 			continue;
@@ -149,30 +156,38 @@ void SSCSMFileDownloader::readBunches()
 
 			if (m_zstream.avail_out == 0) {
 				// the file length was read
-				m_read_length = readU32(m_buffer);
+				m_read_length = readU32(m_current_buffer);
+				delete[] m_current_buffer;
+				m_current_buffer = nullptr;
 				if (m_read_length == 0) {
 					// empty file
-					// create empty file
-					std::ofstream file(m_current_file_path, std::ios_base::app);
-					file.close();
+					// todo
+					//~ // create empty file
+					//~ std::ofstream file(m_current_file_path, std::ios_base::app);
+					//~ file.close();
 					// prepare step 1
 					m_current_file_path = "";
 					continue;
 				}
+				// create buffer for file
+				m_current_buffer = new u8[m_read_length];
+				m_files.emplace(m_current_file_path,
+						std::pair<char *, u32>((char *)m_current_buffer, m_read_length));
 				// prepare step 4
-				m_zstream.next_out = m_buffer;
-				m_zstream.avail_out = MYMIN(m_read_length, m_buffer_size);
+				m_zstream.next_out = m_current_buffer;
+				m_zstream.avail_out = m_read_length;
 			}
 
 			continue;
 
 		} else { // step 4
-			// read the file and write it
+			// read the file and save it
 			ret = inflate(&m_zstream, Z_SYNC_FLUSH);
 			if (ret < 0)
 				throw SerializationError("SSCSMFileDownloader: inflate failed (step 4)");
 
 			if (m_zstream.avail_out == 0) {
+				/*
 				// append to the file
 				u32 readc = MYMIN(m_read_length, m_buffer_size);
 				if (m_remaining_disk_space < readc) {
@@ -195,6 +210,13 @@ void SSCSMFileDownloader::readBunches()
 					// prepare step 1
 					m_current_file_path = "";
 				}
+				*/
+
+				// file buffer is filled
+				// prepare step 1
+				m_current_file_path = "";
+				m_read_length = 0;
+				m_current_buffer = nullptr; // do not delete
 			}
 
 			continue;
@@ -209,4 +231,9 @@ void SSCSMFileDownloader::readBunches()
 	if (!m_bunches.empty() && m_bunches.top().i <= m_next_bunch_index) {
 		readBunches();
 	}
+}
+
+void SSCSMLoader::loadMods()
+{
+	// todo: load all m_sscsms from m_files
 }

@@ -3,16 +3,18 @@
 
 #include <vector>
 #include <queue>
+#include <map>
+#include <utility> //pair
 #include "util/string.h"
 #include "util/numeric.h"
 #include "zlib.h"
 
-class SSCSMFileDownloader
+class SSCSMLoader
 {
 public:
-	SSCSMFileDownloader(u32 bunches_count);
+	SSCSMLoader(u32 bunches_count, std::vector<std::string> sscsms);
 
-	~SSCSMFileDownloader();
+	~SSCSMLoader();
 
 	/*
 	 * Returns true when finished
@@ -42,17 +44,20 @@ private:
 
 	void readBunches();
 
+	void loadMods();
+
 	std::priority_queue<bunch, std::vector<bunch>, comp> m_bunches;
 	u32 m_bunches_count;
 	u32 m_next_bunch_index;
 
+	std::vector<std::string> m_sscsms;
+
 	z_stream m_zstream;
 
-	u8 *m_buffer;
-	const u32 m_buffer_size = 1024; // this has to be at least 256 to be able to hold the file path
+	u8 *m_current_buffer;
 
 	std::string m_current_file_path;
 	u32 m_read_length;
 
-	u64 m_remaining_disk_space;
+	std::map<std::string, std::pair<char *, u32>> m_files;
 };

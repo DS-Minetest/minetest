@@ -67,7 +67,7 @@ const ToServerCommandHandler toServerCommandTable[TOSERVER_NUM_MSG_TYPES] =
 	null_command_handler, // 0x28
 	null_command_handler, // 0x29
 	null_command_handler, // 0x2a
-	null_command_handler, // 0x2b
+	{ "TOSERVER_REQUEST_SSCSM_FILES",      TOSERVER_STATE_STARTUP, &Server::handleCommand_RequestSSCSMFiles }, // 0x2b
 	null_command_handler, // 0x2c
 	null_command_handler, // 0x2d
 	null_command_handler, // 0x2e

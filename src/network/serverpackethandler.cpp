@@ -324,7 +324,6 @@ void Server::handleCommand_Init2(NetworkPacket* pkt)
 
 	// Send sscsm stuff
 	SendSSCSMAnnounce(pkt->getPeerId()); //hier
-	SendSSCSMFiles(pkt->getPeerId());
 
 	// Warnings about protocol version can be issued here
 	if (getClient(pkt->getPeerId())->net_proto_version < LATEST_PROTOCOL_VERSION) {
@@ -357,6 +356,21 @@ void Server::handleCommand_RequestMedia(NetworkPacket* pkt)
 	}
 
 	sendRequestedMedia(pkt->getPeerId(), tosend);
+}
+
+void Server::handleCommand_RequestSSCSMFiles(NetworkPacket* pkt)
+{
+	u16 version;
+
+	*pkt >> version;
+
+	if (version != 0) {
+		warningstream << "Server::handleCommand_RequestSSCSMFiles got wrong version from \""
+				<< getPlayerName(pkt->getPeerId()) << "\"" << std::endl;
+		return;
+	}
+
+	SendSSCSMFiles(pkt->getPeerId());
 }
 
 void Server::handleCommand_ClientReady(NetworkPacket* pkt)

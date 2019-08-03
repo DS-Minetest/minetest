@@ -301,10 +301,10 @@ enum ToClientCommand
 		for all sscsms (in correct loading order) {
 			std::string name
 		}
+		u32 total number of file bunches
 	*/
 	TOCLIENT_SSCSM_FILE_BUNCH = 0x2C,
 	/*
-		u32 total number of file bunches
 		u32 index of this file bunch
 		u32 length of this bunch {
 			u8 compressed data
@@ -771,6 +771,12 @@ enum ToServerCommand
 	TOSERVER_CLICK_OBJECT = 0x27, // Obsolete
 	TOSERVER_GROUND_ACTION = 0x28, // Obsolete
 	TOSERVER_RELEASE = 0x29, // Obsolete
+
+	TOSERVER_REQUEST_SSCSM_FILES = 0x2B, //hier
+	/*
+		u16 version (for now kept at 0)
+	*/
+
 	TOSERVER_SIGNTEXT = 0x30, // Obsolete
 
 	TOSERVER_INVENTORY_ACTION = 0x31,

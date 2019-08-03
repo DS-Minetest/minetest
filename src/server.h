@@ -170,6 +170,7 @@ public:
 	void handleCommand_FirstSrp(NetworkPacket* pkt);
 	void handleCommand_SrpBytesA(NetworkPacket* pkt);
 	void handleCommand_SrpBytesM(NetworkPacket* pkt);
+	void handleCommand_RequestSSCSMFiles(NetworkPacket* pkt);
 
 	void ProcessData(NetworkPacket *pkt);
 

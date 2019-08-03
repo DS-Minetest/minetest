@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/base64.h"
 #include "chatmessage.h"
 #include "client/clientmedia.h"
-#include "client/sscsmfiledownloader.h"
+#include "client/sscsmloader.h"
 #include "log.h"
 #include "map.h"
 #include "mapsector.h"
@@ -1391,41 +1391,58 @@ void Client::handleCommand_SSCSMAnnounce(NetworkPacket *pkt) //hier
 		for all sscsms (in correct loading order) {
 			std::string name
 		}
+		u32 total number of file bunches
 	*/
+
 	u16 sscsms_count;
+	u32 file_bunches_count;
+
 	*pkt >> sscsms_count;
+
 	std::vector<std::string> sscsms(sscsms_count);
 	for (; sscsms_count > 0; sscsms_count--) {
 		std::string modname;
 		*pkt >> modname;
 		sscsms.push_back(modname);
 	}
-	// todo: save the sscsm list and use it
+
+	*pkt >> file_bunches_count;
+
+	m_sscsm_loader = new SSCSMLoader(file_bunches_count, sscsms);
+
+	NetworkPacket resp_pkt(TOSERVER_REQUEST_SSCSM_FILES, 2);
+	resp_pkt << (u16)0;
+	Send(&resp_pkt);
 }
 
 void Client::handleCommand_SSCSMFileBunch(NetworkPacket *pkt) //hier
 {
 	/*
-		u32 total number of file bunches
 		u32 index of this file bunch
 		u32 length of this bunch {
 			u8 compressed data
 		}
 	*/
-	u32 file_bunches_count, i;
+	u32 file_bunch_i;
 	u32 size;
-	*pkt >> file_bunches_count >> i >> size;
+
+	*pkt >> file_bunch_i >> size;
 
 	u8 *buffer = new u8[size];
 	for (u32 i = 0; i < size; i++) // todo: there might be a more efficient way to copy this
 		*pkt >> buffer[i];
 
-	if (!m_sscsm_file_downloader)
-		m_sscsm_file_downloader = new SSCSMFileDownloader(file_bunches_count);
+	if (!m_sscsm_loader) {
+		errorstream << "Client::handleCommand_SSCSMFileBunch: missing m_sscsm_loader"
+				<< std::endl;
+		return;
+	}
 
-	bool finished = m_sscsm_file_downloader->addBunch(i, buffer, size);
-	if (finished)
-		delete m_sscsm_file_downloader;
+	bool finished = m_sscsm_loader->addBunch(file_bunch_i, buffer, size);
+	if (finished) {
+		delete m_sscsm_loader;
+		m_sscsm_loader = nullptr;
+	}
 }
 
 /*

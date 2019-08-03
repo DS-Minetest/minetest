@@ -171,7 +171,7 @@ const ServerCommandFactory serverCommandFactoryTable[TOSERVER_NUM_MSG_TYPES] =
 	null_command_factory, // 0x28
 	null_command_factory, // 0x29
 	null_command_factory, // 0x2a
-	null_command_factory, // 0x2b
+	{ "TOSERVER_REQUEST_SSCSM_FILES", 1, true }, // 0x2b
 	null_command_factory, // 0x2c
 	null_command_factory, // 0x2d
 	null_command_factory, // 0x2e

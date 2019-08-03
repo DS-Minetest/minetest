@@ -97,7 +97,7 @@ Client::Client(
 	m_password(password),
 	m_chosen_auth_mech(AUTH_MECHANISM_NONE),
 	m_media_downloader(new ClientMediaDownloader()),
-	m_sscsm_file_downloader(nullptr),
+	m_sscsm_loader(nullptr),
 	m_state(LC_Created),
 	m_game_ui(game_ui),
 	m_modchannel_mgr(new ModChannelMgr())
@@ -339,10 +339,11 @@ void Client::step(float dtime)
 		initial_step = false;
 	}
 	else if(m_state == LC_Created) {
-		//hier
-		// clear sscsm cache
-		// (this might be the wrong place to do so)
-		fs::RecursiveDelete(porting::path_cache + DIR_DELIM + "sscsm");
+		// do not do this ↓, files are kept in ram as buffers
+		//~ //hier
+		//~ // clear sscsm cache
+		//~ // (this might be the wrong place to do so)
+		//~ fs::RecursiveDelete(porting::path_cache + DIR_DELIM + "sscsm");
 
 		if (m_is_registration_confirmation_state) {
 			// Waiting confirmation
