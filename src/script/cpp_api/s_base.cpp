@@ -219,6 +219,24 @@ void ScriptApiBase::loadModFromMemory(const std::string &mod_name)
 	}
 	lua_pop(L, 1); // Pop error handler
 }
+
+void ScriptApiBase::loadFromBuffer(const std::string &name, char *buffer, size_t size)
+{
+	lua_State *L = getStack();
+
+	int error_handler = PUSH_ERROR_HANDLER(L);
+
+	bool ok = ScriptApiSecurity::safeLoadBuffer(L, buffer, size, name.c_str());
+	if (ok)
+		ok = !lua_pcall(L, 0, 0, error_handler);
+	if (!ok) {
+		std::string error_msg = luaL_checkstring(L, -1);
+		lua_pop(L, 2); // Pop error message and error handler
+		throw ModError("Failed to load and run \"" +
+				name + "\":\n" + error_msg);
+	}
+	lua_pop(L, 1); // Pop error handler
+}
 #endif
 
 // Push the list of callbacks (a lua table).

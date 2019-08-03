@@ -9,10 +9,13 @@
 #include "util/numeric.h"
 #include "zlib.h"
 
+class ClientScripting;
+
 class SSCSMLoader
 {
 public:
-	SSCSMLoader(u32 bunches_count, std::vector<std::string> sscsms);
+	SSCSMLoader(u32 bunches_count, std::vector<std::string> sscsms,
+		ClientScripting *script);
 
 	~SSCSMLoader();
 
@@ -46,6 +49,8 @@ private:
 
 	void loadMods();
 
+	void doFile(const std::string &path);
+
 	std::priority_queue<bunch, std::vector<bunch>, comp> m_bunches;
 	u32 m_bunches_count;
 	u32 m_next_bunch_index;
@@ -60,4 +65,6 @@ private:
 	u32 m_read_length;
 
 	std::map<std::string, std::pair<char *, u32>> m_files;
+
+	ClientScripting *m_script; // todo: replace this with a new, more secure sscsm scripting
 };

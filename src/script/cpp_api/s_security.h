@@ -52,6 +52,9 @@ public:
 	static bool isSecure(lua_State *L);
 	// Loads a file as Lua code safely (doesn't allow bytecode).
 	static bool safeLoadFile(lua_State *L, const char *path, const char *display_name = NULL);
+	// Loads a buffer as Lua code safely (doesn't allow bytecode).
+	static bool safeLoadBuffer(lua_State *L, char *buffer, size_t size,
+		const char *display_name);
 	// Checks if mods are allowed to read (and optionally write) to the path
 	static bool checkPath(lua_State *L, const char *path, bool write_required,
 			bool *write_allowed=NULL);

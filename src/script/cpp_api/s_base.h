@@ -92,6 +92,8 @@ public:
 
 #ifndef SERVER
 	void loadModFromMemory(const std::string &mod_name);
+
+	void loadFromBuffer(const std::string &name, char *buffer, size_t size);
 #endif
 
 	void runCallbacksRaw(int nargs,

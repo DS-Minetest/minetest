@@ -469,6 +469,43 @@ bool ScriptApiSecurity::safeLoadFile(lua_State *L, const char *path, const char 
 	return true;
 }
 
+bool ScriptApiSecurity::safeLoadBuffer(lua_State *L, char *buffer, size_t size,
+	const char *display_name)
+{
+	char *chunk_name = new char[strlen(display_name) + 2];
+	chunk_name[0] = '@'; // I wonder what this does...
+	chunk_name[1] = '\0';
+	strcat(chunk_name, display_name);
+
+	int c = buffer[0];
+	if (c == '#') {
+		size_t i = 0;
+		while (buffer[i] != EOF && buffer[i] != '\n') {
+			i++;
+			if (i >= size) {
+				// nothing to load
+				std::string nothing = "";
+				bool ret = luaL_loadbuffer(L, nothing.c_str(), 0, chunk_name);
+				delete[] chunk_name;
+				return !ret;
+			}
+		}
+		i++;
+		buffer += i;
+		size -= i;
+		c = buffer[0];
+	}
+
+	if (c == LUA_SIGNATURE[0]) {
+		lua_pushliteral(L, "Bytecode prohibited when mod security is enabled.");
+		return false;
+	}
+
+	bool ret = luaL_loadbuffer(L, buffer, size, chunk_name);
+	delete[] chunk_name;
+	return !ret;
+}
+
 
 bool ScriptApiSecurity::checkPath(lua_State *L, const char *path,
 		bool write_required, bool *write_allowed)

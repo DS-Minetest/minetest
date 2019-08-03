@@ -6,6 +6,7 @@
 #include <fstream>
 #include "settings.h"
 #include "exceptions.h"
+#include "script/scripting_client.h"
 
 /*
  * data in decompressed buffers:
@@ -18,10 +19,11 @@
  */
 
 
-SSCSMLoader::SSCSMLoader(u32 bunches_count, std::vector<std::string> sscsms) :
+SSCSMLoader::SSCSMLoader(u32 bunches_count, std::vector<std::string> sscsms,
+	ClientScripting *script) :
 	m_bunches(), m_bunches_count(bunches_count), m_next_bunch_index(0),
 	m_sscsms(sscsms), m_current_buffer(nullptr), m_current_file_path(""),
-	m_read_length(0)
+	m_read_length(0), m_script(script)
 {
 	// initaialize the z_stream
 	m_zstream.zalloc = Z_NULL;
@@ -237,18 +239,34 @@ void SSCSMLoader::loadMods()
 {
 	// todo: load all m_sscsms from m_files
 
-	warningstream << "SSCSMLoader::loadMods sscsms: " << std::endl;
-	for (const std::string &n : m_sscsms)
-		warningstream << "\t\"" << n << "\"" << std::endl;
+	//~ warningstream << "SSCSMLoader::loadMods sscsms: " << std::endl;
+	//~ for (const std::string &n : m_sscsms)
+		//~ warningstream << "\t\"" << n << "\"" << std::endl;
 
-	warningstream << "SSCSMLoader::loadMods file paths: " << std::endl;
-	for (auto file_it = m_files.begin(); file_it != m_files.end(); ++file_it) {
-		warningstream << "\t\"" << file_it->first << "\"" << std::endl;
-	}
-
-	//~ warningstream << "SSCSMLoader::loadMods files: " << std::endl;
+	//~ warningstream << "SSCSMLoader::loadMods file paths: " << std::endl;
 	//~ for (auto file_it = m_files.begin(); file_it != m_files.end(); ++file_it) {
 		//~ warningstream << "\t\"" << file_it->first << "\"" << std::endl;
-		//~ warningstream << "\"" << std::string(file_it->second.first, 10) << "\"" << std::endl;
 	//~ }
+
+	doFile("*builtin*:sscsm/init.lua");
+	for (const std::string &modname : m_sscsms) {
+		doFile(modname + ":/init.lua");
+	}
+}
+
+void SSCSMLoader::doFile(const std::string &path)
+{
+	try {
+		const std::pair<char *, u32> &file = m_files.at(path);
+
+		if (!m_script) {
+			errorstream << "SSCSMLoader has no script" << std::endl;
+			return;
+		}
+
+		m_script->loadFromBuffer(path, file.first, file.second);
+
+	} catch (const std::out_of_range &e) {
+		warningstream << "try to do a non-existent sscsm file" << std::endl;
+	}
 }

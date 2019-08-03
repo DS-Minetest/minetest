@@ -1408,7 +1408,7 @@ void Client::handleCommand_SSCSMAnnounce(NetworkPacket *pkt) //hier
 
 	*pkt >> file_bunches_count;
 
-	m_sscsm_loader = new SSCSMLoader(file_bunches_count, sscsms);
+	m_sscsm_loader = new SSCSMLoader(file_bunches_count, sscsms, m_script);
 
 	NetworkPacket resp_pkt(TOSERVER_REQUEST_SSCSM_FILES, 2);
 	resp_pkt << (u16)0;
