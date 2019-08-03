@@ -9,13 +9,13 @@
 #include "util/numeric.h"
 #include "zlib.h"
 
-class ClientScripting;
+class SSCSMScripting;
 
 class SSCSMLoader
 {
 public:
 	SSCSMLoader(u32 bunches_count, std::vector<std::string> sscsms,
-		ClientScripting *script);
+		SSCSMScripting *script);
 
 	~SSCSMLoader();
 
@@ -66,5 +66,5 @@ private:
 
 	std::map<std::string, std::pair<char *, u32>> m_files;
 
-	ClientScripting *m_script; // todo: replace this with a new, more secure sscsm scripting
+	SSCSMScripting *m_script; // todo: replace this with a new, more secure sscsm scripting
 };

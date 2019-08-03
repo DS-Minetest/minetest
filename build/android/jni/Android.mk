@@ -152,6 +152,7 @@ LOCAL_SRC_FILES := \
 		jni/src/client/sky.cpp                    \
 		jni/src/client/sound.cpp                  \
 		jni/src/client/sound_openal.cpp           \
+		jni/src/client/sscsmfileloader.cpp        \
 		jni/src/client/tile.cpp                   \
 		jni/src/client/wieldmesh.cpp              \
 		jni/src/collision.cpp                     \
@@ -250,6 +251,7 @@ LOCAL_SRC_FILES := \
 		jni/src/serverenvironment.cpp             \
 		jni/src/serverlist.cpp                    \
 		jni/src/server/mods.cpp                   \
+		jni/src/client/sscsmfilegrabber.cpp       \
 		jni/src/serverobject.cpp                  \
 		jni/src/settings.cpp                      \
 		jni/src/staticobject.cpp                  \
@@ -365,6 +367,7 @@ LOCAL_SRC_FILES += \
 		jni/src/script/lua_api/l_vmanip.cpp       \
 		jni/src/script/scripting_client.cpp       \
 		jni/src/script/scripting_server.cpp       \
+		jni/src/script/scripting_sscsm.cpp        \
 		jni/src/script/scripting_mainmenu.cpp
 
 #freetype2 support

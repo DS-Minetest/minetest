@@ -37,6 +37,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "network/clientopcodes.h"
 #include "network/connection.h"
 #include "script/scripting_client.h"
+#include "script/scripting_sscsm.h"
 #include "util/serialize.h"
 #include "util/srp.h"
 #include "tileanimation.h"
@@ -1408,7 +1409,11 @@ void Client::handleCommand_SSCSMAnnounce(NetworkPacket *pkt) //hier
 
 	*pkt >> file_bunches_count;
 
-	m_sscsm_loader = new SSCSMLoader(file_bunches_count, sscsms, m_script);
+	m_sscsm_script = new SSCSMScripting(this);
+	m_env.setSSCSMScript(m_sscsm_script);
+	m_sscsm_script->setEnv(&m_env);
+
+	m_sscsm_loader = new SSCSMLoader(file_bunches_count, sscsms, m_sscsm_script);
 
 	NetworkPacket resp_pkt(TOSERVER_REQUEST_SSCSM_FILES, 2);
 	resp_pkt << (u16)0;

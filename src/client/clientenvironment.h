@@ -28,6 +28,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 class ClientSimpleObject;
 class ClientMap;
 class ClientScripting;
+class SSCSMScripting;
 class ClientActiveObject;
 class GenericCAO;
 class LocalPlayer;
@@ -71,6 +72,7 @@ public:
 
 	Client *getGameDef() { return m_client; }
 	void setScript(ClientScripting *script) { m_script = script; }
+	void setSSCSMScript(SSCSMScripting *script) { m_sscsm_script = script; }
 
 	void step(f32 dtime);
 
@@ -152,6 +154,7 @@ private:
 	ITextureSource *m_texturesource;
 	Client *m_client;
 	ClientScripting *m_script = nullptr;
+	SSCSMScripting *m_sscsm_script = nullptr;
 	client::ActiveObjectMgr m_ao_manager;
 	std::vector<ClientSimpleObject*> m_simple_objects;
 	std::queue<ClientEnvEvent> m_client_event_queue;

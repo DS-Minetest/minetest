@@ -332,6 +332,74 @@ void ScriptApiSecurity::initializeSecurityClient()
 	setLuaEnv(L, thread);
 }
 
+void ScriptApiSecurity::initializeSecuritySSCSM()
+{
+	// only allow print; todo
+	static const char *whitelist[] = {
+		"print",
+		"tostring", // print needs this
+	};
+	static const char *os_whitelist[] = {
+	};
+	static const char *debug_whitelist[] = {
+	};
+
+#if USE_LUAJIT
+	static const char *jit_whitelist[] = {
+	};
+#endif
+
+	m_secure = true;
+
+	lua_State *L = getStack();
+	int thread = getThread(L);
+
+	// create an empty environment
+	createEmptyEnv(L);
+
+	// Copy safe base functions
+	lua_getglobal(L, "_G");
+	lua_getfield(L, -2, "_G");
+	copy_safe(L, whitelist, sizeof(whitelist));
+
+	// And replace unsafe ones
+	//~ SECURE_API(g, dofile);
+	//~ SECURE_API(g, load);
+	//~ SECURE_API(g, loadfile);
+	//~ SECURE_API(g, loadstring);
+	//~ SECURE_API(g, require);
+	lua_pop(L, 2);
+
+
+
+	// Copy safe OS functions
+	lua_getglobal(L, "os");
+	lua_newtable(L);
+	copy_safe(L, os_whitelist, sizeof(os_whitelist));
+	lua_setfield(L, -3, "os");
+	lua_pop(L, 1);  // Pop old OS
+
+
+	// Copy safe debug functions
+	lua_getglobal(L, "debug");
+	lua_newtable(L);
+	copy_safe(L, debug_whitelist, sizeof(debug_whitelist));
+	lua_setfield(L, -3, "debug");
+	lua_pop(L, 1);  // Pop old debug
+
+#if USE_LUAJIT
+	// Copy safe jit functions, if they exist
+	lua_getglobal(L, "jit");
+	lua_newtable(L);
+	copy_safe(L, jit_whitelist, sizeof(jit_whitelist));
+	lua_setfield(L, -3, "jit");
+	lua_pop(L, 1);  // Pop old jit
+#endif
+
+	// Set the environment to the one we created earlier
+	setLuaEnv(L, thread);
+}
+
 int ScriptApiSecurity::getThread(lua_State *L)
 {
 #if LUA_VERSION_NUM <= 501

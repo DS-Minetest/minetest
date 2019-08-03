@@ -6,7 +6,7 @@
 #include <fstream>
 #include "settings.h"
 #include "exceptions.h"
-#include "script/scripting_client.h"
+#include "script/scripting_sscsm.h"
 
 /*
  * data in decompressed buffers:
@@ -20,7 +20,7 @@
 
 
 SSCSMLoader::SSCSMLoader(u32 bunches_count, std::vector<std::string> sscsms,
-	ClientScripting *script) :
+	SSCSMScripting *script) :
 	m_bunches(), m_bunches_count(bunches_count), m_next_bunch_index(0),
 	m_sscsms(sscsms), m_current_buffer(nullptr), m_current_file_path(""),
 	m_read_length(0), m_script(script)

@@ -98,6 +98,7 @@ Client::Client(
 	m_chosen_auth_mech(AUTH_MECHANISM_NONE),
 	m_media_downloader(new ClientMediaDownloader()),
 	m_sscsm_loader(nullptr),
+	m_sscsm_script(nullptr),
 	m_state(LC_Created),
 	m_game_ui(game_ui),
 	m_modchannel_mgr(new ModChannelMgr())
