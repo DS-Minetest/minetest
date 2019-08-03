@@ -1399,7 +1399,7 @@ void Client::handleCommand_SSCSMAnnounce(NetworkPacket *pkt) //hier
 
 	*pkt >> sscsms_count;
 
-	std::vector<std::string> sscsms(sscsms_count);
+	std::vector<std::string> sscsms;
 	for (; sscsms_count > 0; sscsms_count--) {
 		std::string modname;
 		*pkt >> modname;

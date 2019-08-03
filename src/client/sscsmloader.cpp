@@ -119,6 +119,7 @@ void SSCSMLoader::readBunches()
 			if (m_zstream.avail_out == 0) {
 				// the whole path is read into buffer
 				m_current_file_path = std::string((char *)m_current_buffer, m_read_length);
+				errorstream << "SSCSMLoader::readBunches new file path: " << m_current_file_path << std::endl;
 				delete[] m_current_buffer;
 
 				/* code for file writing
@@ -157,6 +158,7 @@ void SSCSMLoader::readBunches()
 			if (m_zstream.avail_out == 0) {
 				// the file length was read
 				m_read_length = readU32(m_current_buffer);
+				errorstream << "readlength: " << m_read_length << std::endl;
 				delete[] m_current_buffer;
 				m_current_buffer = nullptr;
 				if (m_read_length == 0) {
@@ -236,4 +238,19 @@ void SSCSMLoader::readBunches()
 void SSCSMLoader::loadMods()
 {
 	// todo: load all m_sscsms from m_files
+
+	warningstream << "SSCSMLoader::loadMods sscsms: " << std::endl;
+	for (const std::string &n : m_sscsms)
+		warningstream << "\t\"" << n << "\"" << std::endl;
+
+	warningstream << "SSCSMLoader::loadMods file paths: " << std::endl;
+	for (auto file_it = m_files.begin(); file_it != m_files.end(); ++file_it) {
+		warningstream << "\t\"" << file_it->first << "\"" << std::endl;
+	}
+
+	warningstream << "SSCSMLoader::loadMods files: " << std::endl;
+	for (auto file_it = m_files.begin(); file_it != m_files.end(); ++file_it) {
+		warningstream << "\t\"" << file_it->first << "\"" << std::endl;
+		warningstream << "\"" << std::string(file_it->second.first, 10) << "\"" << std::endl;
+	}
 }
