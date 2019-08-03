@@ -40,7 +40,7 @@ void SSCSMFileGrabber::parseMods()
 
 	// add builtin
 	std::string builtin_path = porting::path_share + DIR_DELIM + "builtin" + DIR_DELIM;
-	//~ addDir(builtin_path + "sscsm", "*builtin*:sscsm");
+	addDir(builtin_path + "sscsm", "*builtin*:sscsm");
 	addDir(builtin_path + "common", "*builtin*:common");
 
 	// parse all mods
@@ -110,9 +110,7 @@ void SSCSMFileGrabber::addDir(const std::string &server_path,
 void SSCSMFileGrabber::addFile(const std::string &server_path,
 	const std::string &client_path)
 {
-	//~ verbosestream << "[Server] adding sscsm-file from " << server_path << " to " <<
-			//~ client_path << std::endl;
-	errorstream << "[Server] adding sscsm-file from " << server_path << " to " <<
+	verbosestream << "[Server] adding sscsm-file from " << server_path << " to " <<
 			client_path << std::endl;
 
 	// Add client_path to buffer
@@ -168,8 +166,6 @@ void SSCSMFileGrabber::clearQueue(bool also_clear_m_buffer)
 		m_zstream.next_in = buffer;
 		m_zstream.avail_in = m_buffer_size;
 
-		//~ errorstream << "SSCSMFileGrabber::clearQueue buffer " << std::string((char *)buffer, 100) << std::endl;
-
 		do {
 			ret = deflate(&m_zstream, Z_NO_FLUSH);
 			if (ret < 0)
@@ -212,5 +208,5 @@ void SSCSMFileGrabber::clearQueue(bool also_clear_m_buffer)
 
 	} while (m_zstream.avail_in > 0);
 
-	m_buffer_offset = 0; // arhklewrjhjh, how could I have been so stupid to forget this?!
+	m_buffer_offset = 0;
 }
