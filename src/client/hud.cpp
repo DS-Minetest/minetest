@@ -1154,7 +1154,7 @@ void drawItemStack(
 		driver->draw2DRectangle(color, progressrect2, clip);
 	}
 
-	const std::string &count_text = item.metadata.getString("count", 0);
+	const std::string &count_text = item.metadata.getString("count");
 	if (font && (item.count >= 2 || !count_text.empty())) {
 		// Get the item count as a string
 		std::string text = count_text.empty() ? itos(item.count) : count_text;
@@ -1168,17 +1168,46 @@ void drawItemStack(
 			sdim
 		);
 
-		// get the count offset
-		const std::string &count_offset = item.metadata.getString("count_offset", 0);
-		if (!count_offset.empty()) {
-			std::vector<std::string> offset_s = split(count_offset,',');
-			if (offset_s.size() >= 2) {
-				s32 rect_sidelength = rect.UpperLeftCorner.X - rect.LowerRightCorner.X;
-				rect2 += v2s32(
-					(s32) (stof(offset_s[0]) * rect_sidelength),
-					(s32) (stof(offset_s[1]) * rect_sidelength)
-				);
+		// get the count alignment
+		s32 count_alignment = stoi(item.metadata.getString("count_alignment"));
+		if (count_alignment != 0) {
+			s32 a_x = count_alignment & 3;
+			s32 a_y = (count_alignment >> 2) & 3;
+
+			s32 x1, x2, y1, y2;
+			switch (a_x) {
+			case 2: // left
+				x1 = rect.UpperLeftCorner.X;
+				x2 = x1 + sdim.X;
+				break;
+			case 1: // middle
+				x1 = (rect.UpperLeftCorner.X + rect.LowerRightCorner.X - sdim.X) / 2;
+				x2 = x1 + sdim.X;
+				break;
+			case 0: // right
+			default:
+				x2 = rect.LowerRightCorner.X;
+				x1 = x2 - sdim.X;
+				break;
 			}
+
+			switch (a_y) {
+			case 2: // up
+				y1 = rect.UpperLeftCorner.Y;
+				y2 = y1 + sdim.Y;
+				break;
+			case 1: // middle
+				y1 = (rect.UpperLeftCorner.Y + rect.LowerRightCorner.Y - sdim.Y) / 2;
+				y2 = y1 + sdim.Y;
+				break;
+			case 0: // down
+			default:
+				y2 = rect.LowerRightCorner.Y;
+				y1 = y2 - sdim.Y;
+				break;
+			}
+
+			rect2 = core::rect<s32>(x1, y1, x1, x2);
 		}
 
 		video::SColor bgcolor(128, 0, 0, 0);
