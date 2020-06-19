@@ -1185,9 +1185,12 @@ void drawItemStack(
 				x2 = x1 + sdim.X;
 				break;
 			case 3: // right
-			default: // 0 = default = right
 				x2 = rect.LowerRightCorner.X;
 				x1 = x2 - sdim.X;
+				break;
+			default: // 0 = default
+				x1 = rect2.UpperLeftCorner.X;
+				x2 = rect2.LowerRightCorner.X;
 				break;
 			}
 
@@ -1201,9 +1204,12 @@ void drawItemStack(
 				y2 = y1 + sdim.Y;
 				break;
 			case 3: // down
-			default: // 0 = default = down
 				y2 = rect.LowerRightCorner.Y;
 				y1 = y2 - sdim.Y;
+				break;
+			default: // 0 = default
+				y1 = rect2.UpperLeftCorner.Y;
+				y2 = rect2.LowerRightCorner.Y;
 				break;
 			}
 
