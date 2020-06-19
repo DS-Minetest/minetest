@@ -1176,32 +1176,32 @@ void drawItemStack(
 
 			s32 x1, x2, y1, y2;
 			switch (a_x) {
-			case 2: // left
+			case 1: // left
 				x1 = rect.UpperLeftCorner.X;
 				x2 = x1 + sdim.X;
 				break;
-			case 1: // middle
+			case 2: // middle
 				x1 = (rect.UpperLeftCorner.X + rect.LowerRightCorner.X - sdim.X) / 2;
 				x2 = x1 + sdim.X;
 				break;
-			case 0: // right
-			default:
+			case 3: // right
+			default: // 0 = default = right
 				x2 = rect.LowerRightCorner.X;
 				x1 = x2 - sdim.X;
 				break;
 			}
 
 			switch (a_y) {
-			case 2: // up
+			case 1: // up
 				y1 = rect.UpperLeftCorner.Y;
 				y2 = y1 + sdim.Y;
 				break;
-			case 1: // middle
+			case 2: // middle
 				y1 = (rect.UpperLeftCorner.Y + rect.LowerRightCorner.Y - sdim.Y) / 2;
 				y2 = y1 + sdim.Y;
 				break;
-			case 0: // down
-			default:
+			case 3: // down
+			default: // 0 = default = down
 				y2 = rect.LowerRightCorner.Y;
 				y1 = y2 - sdim.Y;
 				break;
