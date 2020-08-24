@@ -3145,10 +3145,14 @@ For the following functions, `v`, `v1`, `v2` are vectors,
 `p1`, `p2` are positions,
 `s` is a scalar (a number):
 
-* `vector.new(a[, b, c])`:
-    * Returns a vector.
-    * A copy of `a` if `a` is a vector.
-    * `{x = a, y = b, z = c}`, if all of `a`, `b`, `c` are defined numbers.
+* `vector.new([a[, b, c]])`:
+    * Returns a new vector `{x = a, y = b, z = c}`.
+    * Deprecated: `vector.new()` does the same as `vector.zero()` and
+      `vector.new(v)` does the same as `vector.copy(v)`
+* `vector.zero()`:
+    * Returns a new vector `{x = 0, y = 0, z = 0}`.
+* `vector.copy(v)`:
+    * Returns a copy of the vector `v`.
 * `vector.from_string(s[, init])`:
     * Returns `v, np`, where `v` is a vector read from the given string `s` and
       `np` is the next position in the string after the vector.

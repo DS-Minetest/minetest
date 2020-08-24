@@ -2,14 +2,26 @@
 vector = {}
 
 function vector.new(a, b, c)
-	if type(a) == "table" then
-		assert(a.x and a.y and a.z, "Invalid vector passed to vector.new()")
-		return {x=a.x, y=a.y, z=a.z}
-	elseif a then
-		assert(b and c, "Invalid arguments for vector.new()")
+	if a and b and c then
 		return {x=a, y=b, z=c}
 	end
-	return {x=0, y=0, z=0}
+
+	-- deprecated, use vector.copy and vector.zero directly
+	if type(a) == "table" then
+		return vector.copy(a)
+	else
+		assert(not a, "Invalid arguments for vector.new()")
+		return vector.zero()
+	end
+end
+
+function vector.zero()
+	return {x = 0, y = 0, z = 0}
+end
+
+function vector.copy(v)
+	assert(v.x and v.y and v.z, "Invalid vector passed to vector.copy()")
+	return {x = v.x, y = v.y, z = v.z}
 end
 
 function vector.from_string(s, init)

@@ -25,6 +25,17 @@ describe("vector", function()
 		end)
 	end)
 
+	it("zero()", function()
+		assert.same({x = 0, y = 0, z = 0}, vector.zero())
+		assert.same(vector.new(), vector.zero())
+	end)
+
+	it("copy()", function()
+		local v = vector.new(1, 2, 3)
+		assert.same(v, vector.copy(v))
+		assert.same(vector.new(v), vector.copy(v))
+	end)
+
 	it("equal()", function()
 			local function assertE(a, b)
 				assert.is_true(vector.equals(a, b))
