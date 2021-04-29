@@ -874,7 +874,7 @@ void Hud::toggleBlockBounds()
 void Hud::drawBlockBounds()
 {
 	if (m_block_bounds_mode == BLOCK_BOUNDS_OFF) {
-		return;	
+		return;
 	}
 
 	video::SMaterial old_material = driver->getMaterial2D();
@@ -998,6 +998,10 @@ void drawItemStack(
 
 	const ItemDefinition &def = item.getDefinition(client->idef());
 
+	core::rect<s32> viewrect = rect;
+	if (clip)
+		viewrect.clipAgainst(*clip);
+
 	// Render as mesh if animated or no inventory image
 	if ((enable_animations && rotation_kind < IT_ROT_NONE) || def.inventory_image.empty()) {
 		ItemMesh *imesh = client->idef()->getWieldMesh(def.name, client);
@@ -1018,9 +1022,6 @@ void drawItemStack(
 		core::rect<s32> oldViewPort = driver->getViewPort();
 		core::matrix4 oldProjMat = driver->getTransform(video::ETS_PROJECTION);
 		core::matrix4 oldViewMat = driver->getTransform(video::ETS_VIEW);
-		core::rect<s32> viewrect = rect;
-		if (clip)
-			viewrect.clipAgainst(*clip);
 
 		core::matrix4 ProjMatrix;
 		ProjMatrix.buildProjectionMatrixOrthoLH(2.0f, 2.0f, -1.0f, 100.0f);
@@ -1217,10 +1218,10 @@ void drawItemStack(
 		}
 
 		video::SColor bgcolor(128, 0, 0, 0);
-		driver->draw2DRectangle(bgcolor, rect2, clip);
+		driver->draw2DRectangle(bgcolor, rect2, &viewrect);
 
 		video::SColor color(255, 255, 255, 255);
-		font->draw(text.c_str(), rect2, color, false, false, clip);
+		font->draw(text.c_str(), rect2, color, false, false, &viewrect);
 	}
 }
 
